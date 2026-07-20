@@ -13,11 +13,11 @@ import RamseyInfinite
 # Nash-Williams Fronts
 
 Fronts are families of finite sets of natural numbers which generalize the families `[M]^k` of
-subsets of size `k ∈ ℕ` for infinite subsets `M ⊆ ℕ`. They enjoy a similar combinatorial property,
-an infinite Ramsey theorem, which is the main result of this file.
+subsets of size `k ∈ ℕ` for infinite subsets `M ⊆ ℕ`. They enjoy a similar combinatorial
+property, an infinite Ramsey theorem, which is the main result of this file.
 
-The explicit definition of a front is relative to an infinite set `M ⊆ ℕ`. A family `F` of finite
-subsets of `M` is a front if it satisfies:
+The explicit definition of a front is relative to an infinite set `M ⊆ ℕ`. A family `F` of
+finite subsets of `M` is a front if it satisfies:
 
 1. (Base) Either `F = {∅}` or `⋃ F = M`.
 2. (Incomparability) For all `s, t ∈ F`, if `s ⊑ t` then `s = t`.
@@ -33,7 +33,8 @@ monotone enumeration and the underlying set is recovered as a `range`.
 * An infinite subset of `ℕ` is a `StrictMono` map `N : ℕ → ℕ`; its set is `Set.range N`.
 * A finite subset is a sorted list `s : List ℕ`; its set is `{x | x ∈ s}`.
 * `IsInit s N` says `s` is the initial segment of the sequence `N`, i.e.
-  `s = [N 0, N 1, …, N (s.length - 1)]`. This is `⊑` between (the increasing enumeration of) a finite set and an infinite set.
+  `s = [N 0, N 1, …, N (s.length - 1)]`. This is `⊑` between (the increasing enumeration of) a
+  finite set and an infinite set.
 * `⊑` between two finite sets is plain `List.IsPrefix` (`<+:`).
 * `[M]^∞`, the infinite subsets of `M`, is exactly the subsequences `M ∘ g` for `StrictMono g`.
 -/
@@ -43,6 +44,26 @@ open Set List
 set_option autoImplicit false
 
 noncomputable section
+
+namespace List
+
+/-- For a nonempty list, `headI` is the `0`-th entry. -/
+theorem headI_eq_getElem {l : List ℕ} (h : 0 < l.length) : l.headI = l[0] := by
+  cases l with
+  | nil => simp at h
+  | cons a t => simp
+
+/-- A prefix keeps the first entry. -/
+theorem IsPrefix.headI_eq {s t : List ℕ} (hpre : s <+: t) (hne : s ≠ []) :
+    t.headI = s.headI := by
+  have hs0 : 0 < s.length := by
+    cases s with
+    | nil => exact absurd rfl hne
+    | cons _ _ => simp
+  rw [headI_eq_getElem (lt_of_lt_of_le hs0 hpre.length_le), headI_eq_getElem hs0]
+  exact (hpre.getElem hs0).symm
+
+end List
 
 namespace Front
 
@@ -72,12 +93,6 @@ theorem IsInit.getElem {s : List ℕ} {N : ℕ → ℕ} (hs : IsInit s N)
     simp [h]
   simpa [List.getElem?_eq_getElem h] using hq
 
-/-- For a nonempty list, `headI` is the `0`-th entry. -/
-theorem headI_eq_getElem {l : List ℕ} (h : 0 < l.length) : l.headI = l[0] := by
-  cases l with
-  | nil => simp at h
-  | cons a t => simp
-
 /-- The first entry of a nonempty initial segment of `N` is `N 0`. -/
 theorem IsInit.headI {s : List ℕ} {N : ℕ → ℕ} (hs : IsInit s N) (h : 0 < s.length) :
     s.headI = N 0 := by
@@ -93,7 +108,7 @@ theorem IsInit.eq_of_length {s t : List ℕ} {N : ℕ → ℕ}
   rw [hs, ht, h]
 
 /-- A prefix of an initial segment of `N` is again an initial segment of `N`. -/
-theorem IsInit.prefix {s t : List ℕ} {N : ℕ → ℕ} (ht : IsInit t N) (h : s <+: t) :
+theorem IsInit.isPrefix {s t : List ℕ} {N : ℕ → ℕ} (ht : IsInit t N) (h : s <+: t) :
     IsInit s N := by
   show s = (List.range s.length).map N
   calc s = t.take s.length := List.prefix_iff_eq_take.mp h
@@ -139,8 +154,8 @@ def powK (M : ℕ → ℕ) (k : ℕ) : Set (List ℕ) :=
 
 /-- The first `k` values of `M ∘ e` forms a size-`k` subset of `M`, for `e` strictly
 monotone. This is the generic member of `[M]^k` used to witness Base and Density. -/
-theorem rangeMap_mem_powK {M : ℕ → ℕ} (hM : StrictMono M) {e : ℕ → ℕ} (he : StrictMono e)
-    (k : ℕ) : (List.range k).map (M ∘ e) ∈ powK M k := by
+theorem rangeMap_mem_powK {M : ℕ → ℕ} (hM : StrictMono M) {e : ℕ → ℕ}
+    (he : StrictMono e) (k : ℕ) : (List.range k).map (M ∘ e) ∈ powK M k := by
   refine ⟨by simp, ?_, ?_⟩
   · rw [List.pairwise_map]
     exact List.pairwise_lt_range.imp fun hab => (hM.comp he) hab
@@ -155,7 +170,8 @@ theorem isFront_powK {M : ℕ → ℕ} (hM : StrictMono M) (k : ℕ) : IsFront (
   sorted _ hs := hs.2.1
   subM _ hs := hs.2.2
   incomp _ hs _ ht hst := hst.eq_of_length (by rw [hs.1, ht.1])
-  dense g hg := ⟨(List.range k).map (M ∘ g), rangeMap_mem_powK hM hg k, isInit_take (M ∘ g) k⟩
+  dense g hg :=
+    ⟨(List.range k).map (M ∘ g), rangeMap_mem_powK hM hg k, isInit_take (M ∘ g) k⟩
   base := by
     rcases Nat.eq_zero_or_pos k with hk | hk
     · -- `[M]^0 = {∅}`
@@ -174,16 +190,17 @@ theorem isFront_powK {M : ℕ → ℕ} (hM : StrictMono M) (k : ℕ) : IsFront (
       · rintro ⟨s, hs, hxs⟩
         exact hs.2.2 x hxs
       · rintro ⟨i, rfl⟩
-        refine ⟨(List.range k).map (M ∘ (i + ·)), rangeMap_mem_powK hM (add_right_strictMono) k, ?_⟩
+        refine ⟨(List.range k).map (M ∘ (i + ·)),
+          rangeMap_mem_powK hM (add_right_strictMono) k, ?_⟩
         rw [List.mem_map]
         exact ⟨0, List.mem_range.mpr hk, by simp⟩
 
 /-!
 ## The Schreier front
 
-The Schreier front on `M` consists of the non-empty finite subsets `s ⊆ M` whose size is one more than
-the minimal element: for an enumeration s `s.length = s.headI + 1`. It is the first genuinely non-uniform front —
-the lists' length varies with where the list starts.
+The Schreier front on `M` consists of the non-empty finite subsets `s ⊆ M` whose size is one
+more than the minimal element: for an enumeration `s`, `s.length = s.headI + 1`. It is the first
+genuinely non-uniform front — the lists' length varies with where the list starts.
 -/
 
 /-- The Schreier front on `M`: increasing lists `s ⊆ M` with `s.length = s.headI + 1`. -/

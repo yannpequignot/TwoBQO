@@ -13,11 +13,12 @@ The *tree* of a front `F` is the set of all prefixes (initial segments) of eleme
 by *proper end-extension* (`treeExt F a b` : `a` properly extends `b`). This file proves that this
 relation is **well-founded**, so a front has an ordinal `rank`.
 
-Well-foundedness is proved directly, by showing there is no infinite descending chain. A descending
-chain is an ascending tower `f 0 ⊏ f 1 ⊏ ⋯` of proper extensions inside the tree. Its lengths grow
-without bound, so the tower has a limit `b : ℕ → ℕ`, a strictly increasing subsequence of `M`. By
-Density some `t ∈ F` is an initial segment of `b`; extending it by one more entry of `b` lands
-inside some `u ∈ F` with `t <+: u`, so Incomparability forces `t = u` — impossible, as `u` is
+Well-foundedness is proved directly, by showing there is no infinite descending chain. A
+descending chain is an ascending tower `f 0 ⊏ f 1 ⊏ ⋯` of proper extensions inside the tree.
+Its lengths grow without bound, so the tower has a limit `b : ℕ → ℕ`, a strictly increasing
+subsequence of `M`. By Density some `t ∈ F` is an initial segment of `b`; extending it by one
+more entry of `b` lands inside some `u ∈ F` with `t <+: u`, so Incomparability forces `t = u` —
+impossible, as `u` is
 strictly longer.
 
 ## Main results
@@ -74,7 +75,7 @@ theorem IsFront.wellFounded_treeExt {F : Set (List ℕ)} {M : ℕ → ℕ} (hF :
     WellFounded (treeExt F) := by
   rw [wellFounded_iff_isEmpty_descending_chain]
   refine ⟨fun ⟨f, hf⟩ => ?_⟩
-  -- `hf n : treeExt F (f (n+1)) (f n)`, i.e. `f 0 ⊏ f 1 ⊏ ⋯` is an ascending tower in the tree.
+  -- `hf n : treeExt F (f (n+1)) (f n)`, i.e. `f 0 ⊏ f 1 ⊏ ⋯` is an ascending tower.
   have hmem : ∀ n, f n ∈ tree F := fun n => (hf n).2.1
   have hpre : ∀ n, f n <+: f (n + 1) := fun n => (hf n).2.2.1
   have hne : ∀ n, f n ≠ f (n + 1) := fun n => (hf n).2.2.2
@@ -166,15 +167,17 @@ theorem exists_gt_range (hM : StrictMono M) (n : ℕ) : ∃ x ∈ Set.range M, n
 theorem exists_extend_gt (hM : StrictMono M) (s : List ℕ) :
     ∃ x ∈ Set.range M, ∀ y ∈ s, y < x := by
   obtain ⟨x, hx, hlt⟩ := exists_gt_range hM (s.toFinset.sup id)
-  exact ⟨x, hx, fun y hy => lt_of_le_of_lt (Finset.le_sup (f := id) (List.mem_toFinset.mpr hy)) hlt⟩
+  refine ⟨x, hx, fun y hy => ?_⟩
+  exact lt_of_le_of_lt (Finset.le_sup (f := id) (List.mem_toFinset.mpr hy)) hlt
 
 /-- Any increasing list in `M` extends to an increasing list in `M` of any prescribed length. -/
 theorem exists_extend_len (hM : StrictMono M) (L : ℕ) :
-    ∀ (s : List ℕ), s.Pairwise (· < ·) → (∀ x ∈ s, x ∈ Set.range M) → s.length ≤ L →
-      ∃ t, s <+: t ∧ t.Pairwise (· < ·) ∧ (∀ x ∈ t, x ∈ Set.range M) ∧ t.length = L := by
-  suffices H : ∀ d s, s.Pairwise (· < ·) → (∀ x ∈ s, x ∈ Set.range M) → L - s.length = d →
-      s.length ≤ L →
-      ∃ t, s <+: t ∧ t.Pairwise (· < ·) ∧ (∀ x ∈ t, x ∈ Set.range M) ∧ t.length = L by
+    ∀ (s : List ℕ), s.Pairwise (· < ·) → (∀ x ∈ s, x ∈ Set.range M) →
+      s.length ≤ L → ∃ t, s <+: t ∧ t.Pairwise (· < ·) ∧
+        (∀ x ∈ t, x ∈ Set.range M) ∧ t.length = L := by
+  suffices H : ∀ d s, s.Pairwise (· < ·) → (∀ x ∈ s, x ∈ Set.range M) →
+      L - s.length = d → s.length ≤ L → ∃ t, s <+: t ∧ t.Pairwise (· < ·) ∧
+        (∀ x ∈ t, x ∈ Set.range M) ∧ t.length = L by
     intro s hs hsM hL; exact H _ s hs hsM rfl hL
   intro d
   induction d with
@@ -233,12 +236,14 @@ theorem rank_eq_sub (hF : IsFront F M) {s0 : List ℕ} (L : ℕ)
               rw [← Ordinal.natCast_succ]; congr 1; omega
           _ = Order.succ (IsWellFounded.rank (treeExt F) (s ++ [x])) := by rw [hrank]
           _ ≤ _ := Ordinal.le_iSup
-              (fun b : {b // treeExt F b s} => Order.succ (IsWellFounded.rank (treeExt F) (b : List ℕ)))
+              (fun b : {b // treeExt F b s} =>
+                Order.succ (IsWellFounded.rank (treeExt F) (b : List ℕ)))
               ⟨s ++ [x], hx⟩
 
 /-- Membership in the tree of `[M]^k`: increasing lists in `M` of length at most `k`. -/
 theorem mem_tree_powK (hM : StrictMono M) {k : ℕ} {s : List ℕ} :
-    s ∈ tree (powK M k) ↔ s.Pairwise (· < ·) ∧ (∀ x ∈ s, x ∈ Set.range M) ∧ s.length ≤ k := by
+    s ∈ tree (powK M k) ↔
+      s.Pairwise (· < ·) ∧ (∀ x ∈ s, x ∈ Set.range M) ∧ s.length ≤ k := by
   constructor
   · rintro ⟨t, ⟨htlen, htp, htM⟩, hpre⟩
     exact ⟨List.Pairwise.sublist hpre.sublist htp, fun x hx => htM x (hpre.subset hx),
@@ -272,19 +277,11 @@ theorem powK_rank (hM : StrictMono M) (k : ℕ) : (isFront_powK hM k).rank = (k 
     (isFront_powK hM k).nil_mem_tree
   simpa [IsFront.rank] using this
 
-/-- A prefix keeps the first entry. -/
-theorem IsPrefix.headI_eq {s t : List ℕ} (hpre : s <+: t) (hne : s ≠ []) : t.headI = s.headI := by
-  have hs0 : 0 < s.length := by
-    cases s with
-    | nil => exact absurd rfl hne
-    | cons _ _ => simp
-  rw [headI_eq_getElem (lt_of_lt_of_le hs0 hpre.length_le), headI_eq_getElem hs0]
-  exact (hpre.getElem hs0).symm
-
 /-- Membership in the tree of the Schreier front. -/
 theorem mem_tree_schreier (hM : StrictMono M) {s : List ℕ} :
     s ∈ tree (schreier M) ↔
-      s.Pairwise (· < ·) ∧ (∀ x ∈ s, x ∈ Set.range M) ∧ (s = [] ∨ s.length ≤ s.headI + 1) := by
+      s.Pairwise (· < ·) ∧ (∀ x ∈ s, x ∈ Set.range M) ∧
+        (s = [] ∨ s.length ≤ s.headI + 1) := by
   constructor
   · rintro ⟨u, ⟨hulen, hup, huM⟩, hpre⟩
     refine ⟨List.Pairwise.sublist hpre.sublist hup, fun x hx => huM x (hpre.subset hx), ?_⟩
@@ -319,7 +316,8 @@ theorem schreier_rank_node (hM : StrictMono M) {s : List ℕ}
     intro s' hp
     have h1 := IsPrefix.headI_eq hp (by simp : [s.headI] ≠ [])
     simpa using h1
-  have hbound : ∀ s', [s.headI] <+: s' → s' ∈ tree (schreier M) → s'.length ≤ s.headI + 1 := by
+  have hbound : ∀ s', [s.headI] <+: s' → s' ∈ tree (schreier M) →
+      s'.length ≤ s.headI + 1 := by
     intro s' hp hmem
     have hne' : s' ≠ [] := by intro h; subst h; simpa using hp.length_le
     rcases ((mem_tree_schreier hM).mp hmem).2.2 with h | h
