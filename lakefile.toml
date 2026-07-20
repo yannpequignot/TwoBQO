@@ -8,4 +8,4 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "TwoBQO"
-globs = ["Fronts", "TwoBQO", "RamseyInfinite", "WellQuasiOrderRegular", "WQO"]
+globs = ["Fronts.+", "TwoBQO", "RamseyInfinite", "WellQuasiOrderRegular", "WQO"]
