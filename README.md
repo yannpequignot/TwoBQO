@@ -17,7 +17,7 @@ The three files build in order; each is `sorry`-free and elaborates against Math
 
 | File | Contents | Suggested Mathlib path |
 |------|----------|------------------------|
-| [`RamseyInfinite.lean`](RamseyInfinite.lean) | Infinite Ramsey theorem for pairs and triples (`infinite_ramsey_pairs`, `infinite_ramsey_triples`), via an iterated pigeonhole "fan" argument. | `Mathlib/Combinatorics/Ramsey/Infinite.lean` |
+| [`RamseyInfinite.lean`](RamseyInfinite.lean) | Infinite Ramsey theorem at **arbitrary arity** `r` (`infinite_ramsey`), by induction on `r` via the iterated-pigeonhole "fan" argument; enumeration form (`infinite_ramsey_seq`) and the pairs/triples instances (`infinite_ramsey_pairs`, `infinite_ramsey_triples`). Colourings are `Finset ℕ → κ` on `r`-subsets, matching B. Mehta's (unported) Lean 3 `inf_ramsey.lean`. | `Mathlib/Combinatorics/Ramsey/Infinite.lean` |
 | [`WellQuasiOrderRegular.lean`](WellQuasiOrderRegular.lean) | Regular sequences in a WQO (`WellQuasiOrdered.eventuallyRegular`), stabilization of antitone sequences, and Higman's order as a WQO on all of `List Q` (`WellQuasiOrdered.sublistForall₂`). | `Mathlib/Order/WellQuasiOrder/Regular.lean` |
 | [`TwoBQO.lean`](TwoBQO.lean) | The 2-BQO theory: `PairSeq`, `TwoBQO`, and the closure/consequence theorems. | `Mathlib/Order/TwoBQO.lean` |
 
