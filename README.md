@@ -17,11 +17,12 @@ The theory follows Pequignot, *Better-quasi-order: ideals and spaces*, EMS Surve
 
 ## Files
 
-The three files build in order; each is `sorry`-free and elaborates against Mathlib `v4.28.0`.
+Each file is `sorry`-free and builds against Mathlib `v4.28.0`.
 
 | File | Contents | Suggested Mathlib path |
 |------|----------|------------------------|
 | [`RamseyInfinite.lean`](RamseyInfinite.lean) | Infinite Ramsey theorem at **arbitrary arity** `r` (`infinite_ramsey`), by induction on `r` via the iterated-pigeonhole "fan" argument, with colourings `Finset ℕ → κ` on `r`-subsets (matching B. Mehta's unported Lean 3 `inf_ramsey.lean`); enumeration form (`infinite_ramsey_seq`); and the classical relational pairs/triples (`infinite_ramsey_pairs`, `infinite_ramsey_triples`) derived from it. | `Mathlib/Combinatorics/Ramsey/Infinite.lean` |
+| [`WQO.lean`](WQO.lean) | The **perfect/bad dichotomy** for sequences (`Sequences.perfect_or_bad`, straight from Ramsey for pairs) and, from it, the monotone-subsequence property of a WQO **without transitivity**: `WellQuasiOrdered.exists_monotone_subseq_lt` (strict, no typeclass) and `…_of_refl` (Mathlib's exact shape but only `[Std.Refl r]` instead of `[IsPreorder α r]`). | `Mathlib/Order/WellQuasiOrder.lean` |
 | [`WellQuasiOrderRegular.lean`](WellQuasiOrderRegular.lean) | Regular sequences in a WQO (`WellQuasiOrdered.eventuallyRegular`), stabilization of antitone sequences, and Higman's order as a WQO on all of `List Q` (`WellQuasiOrdered.sublistForall₂`). | `Mathlib/Order/WellQuasiOrder/Regular.lean` |
 | [`TwoBQO.lean`](TwoBQO.lean) | The 2-BQO theory: `PairSeq`, `TwoBQO`, and the closure/consequence theorems. | `Mathlib/Order/TwoBQO.lean` |
 
@@ -35,6 +36,9 @@ The three files build in order; each is `sorry`-free and elaborates against Math
 - `TwoBQO.lexSigmaQO` — closure under lexicographic sum along a 2-BQO index.
 - `TwoBQO.dom_twoBQO` — the domination order on subsets of a 2-BQO is WQO.
 - `TwoBQO.embedForAll_wqo` — the pointwise embedding preorder on `ℕ → Q` is WQO when `r` is 2-BQO.
+- `WellQuasiOrdered.exists_monotone_subseq_of_refl` — every sequence in a WQO has a monotone
+  subsequence assuming only `[Std.Refl r]`, **dropping the transitivity** carried by Mathlib's
+  current `WellQuasiOrdered.exists_monotone_subseq` (answering a Zulip question of Leo Shine).
 
 ## Building
 
