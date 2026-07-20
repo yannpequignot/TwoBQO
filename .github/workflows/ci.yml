@@ -1,0 +1,29 @@
+name: CI
+
+# Kernel-checks the development on every push and pull request: builds
+# RamseyInfinite, WellQuasiOrderRegular and TwoBQO with Lean's kernel against the
+# pinned Mathlib (v4.28.0). RamseyInfinite.lean ends with `#guard_msgs` axiom checks,
+# so a green build also asserts the headline Ramsey theorems use only the three
+# standard axioms (no `sorry`).
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & kernel-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Build with lean-action
+        uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true

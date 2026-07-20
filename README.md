@@ -1,5 +1,9 @@
 # TwoBQO
 
+[![CI](https://github.com/yannpequignot/TwoBQO/actions/workflows/ci.yml/badge.svg)](https://github.com/yannpequignot/TwoBQO/actions/workflows/ci.yml)
+![Lean 4](https://img.shields.io/badge/Lean-v4.28.0-purple.svg)
+![Mathlib](https://img.shields.io/badge/Mathlib-v4.28.0-blue.svg)
+
 A self-contained Lean 4 / Mathlib formalization of **2-better-quasi-orders (2-BQO)**, staged as a
 candidate Mathlib contribution.
 
@@ -17,7 +21,7 @@ The three files build in order; each is `sorry`-free and elaborates against Math
 
 | File | Contents | Suggested Mathlib path |
 |------|----------|------------------------|
-| [`RamseyInfinite.lean`](RamseyInfinite.lean) | Infinite Ramsey theorem at **arbitrary arity** `r` (`infinite_ramsey`), by induction on `r` via the iterated-pigeonhole "fan" argument; enumeration form (`infinite_ramsey_seq`) and the pairs/triples instances (`infinite_ramsey_pairs`, `infinite_ramsey_triples`). Colourings are `Finset ℕ → κ` on `r`-subsets, matching B. Mehta's (unported) Lean 3 `inf_ramsey.lean`. | `Mathlib/Combinatorics/Ramsey/Infinite.lean` |
+| [`RamseyInfinite.lean`](RamseyInfinite.lean) | Infinite Ramsey theorem at **arbitrary arity** `r` (`infinite_ramsey`), by induction on `r` via the iterated-pigeonhole "fan" argument, with colourings `Finset ℕ → κ` on `r`-subsets (matching B. Mehta's unported Lean 3 `inf_ramsey.lean`); enumeration form (`infinite_ramsey_seq`); and the classical relational pairs/triples (`infinite_ramsey_pairs`, `infinite_ramsey_triples`) derived from it. | `Mathlib/Combinatorics/Ramsey/Infinite.lean` |
 | [`WellQuasiOrderRegular.lean`](WellQuasiOrderRegular.lean) | Regular sequences in a WQO (`WellQuasiOrdered.eventuallyRegular`), stabilization of antitone sequences, and Higman's order as a WQO on all of `List Q` (`WellQuasiOrdered.sublistForall₂`). | `Mathlib/Order/WellQuasiOrder/Regular.lean` |
 | [`TwoBQO.lean`](TwoBQO.lean) | The 2-BQO theory: `PairSeq`, `TwoBQO`, and the closure/consequence theorems. | `Mathlib/Order/TwoBQO.lean` |
 
@@ -34,16 +38,15 @@ The three files build in order; each is `sorry`-free and elaborates against Math
 
 ## Building
 
-The files are not wired into a Lake project; each elaborates directly against a Mathlib olean cache:
+A standard Lake project pinned to Mathlib `v4.28.0`:
 
 ```sh
-# RamseyInfinite and WellQuasiOrderRegular have no local dependencies:
-lake env lean RamseyInfinite.lean -o RamseyInfinite.olean
-lake env lean WellQuasiOrderRegular.lean -o WellQuasiOrderRegular.olean
-
-# TwoBQO imports both, so put their oleans on LEAN_PATH:
-LEAN_PATH="$(lake env printenv LEAN_PATH):$(pwd)" lake env lean TwoBQO.lean
+lake exe cache get   # download the prebuilt Mathlib oleans (do this first)
+lake build           # kernel-checks all three files
 ```
+
+`lake build` builds `TwoBQO` and, transitively, `RamseyInfinite` and `WellQuasiOrderRegular`.
+CI runs the same build on every push (see the badge above).
 
 ## Status
 
