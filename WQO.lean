@@ -20,13 +20,10 @@ any relation, from which the *monotone subsequence* property of a well-quasi-ord
   consequence of `infinite_ramsey_pairs`; needs no order axioms.
 * `WellQuasiOrdered.exists_monotone_subseq_lt`: in a WQO, every sequence has a strictly increasing
   reindexing along which `r` holds for all pairs `m < n`. No typeclass assumptions.
-* `WellQuasiOrdered.exists_monotone_subseq_of_refl`: the same in the exact shape of Mathlib's
-  `WellQuasiOrdered.exists_monotone_subseq` (an order embedding, with `m ≤ n`), but assuming only
-  `[IsRefl α r]` in place of `[IsPreorder α r]` — i.e. **dropping transitivity**.
 
-The last result answers a question of Leo Shine on the Mathlib Zulip: the monotone-subsequence
-property does not need the preorder (in particular transitivity) hypothesis carried by the
-current Mathlib statement.
+The second result answers a question of Leo Shine on the Mathlib Zulip: the monotone-subsequence
+property of a WQO does not need the preorder (in particular transitivity) hypothesis carried by
+the current Mathlib `WellQuasiOrdered.exists_monotone_subseq`.
 -/
 
 open Set
@@ -85,19 +82,5 @@ theorem WellQuasiOrdered.exists_monotone_subseq_lt (h : WellQuasiOrdered r) (f :
   · exact ⟨e, he, fun m n hmn => hperf m n hmn⟩
   · obtain ⟨m, n, hmn, hr⟩ := h (f ∘ e)
     exact absurd hr (hbad m n hmn)
-
-/-- The monotone-subsequence property in the exact shape of Mathlib's
-`WellQuasiOrdered.exists_monotone_subseq` — an order embedding `g : ℕ ↪o ℕ` with `m ≤ n` — but
-assuming only reflexivity `[IsRefl α r]` instead of the full `[IsPreorder α r]`, i.e. **dropping
-transitivity**. Reflexivity is genuinely needed only for the diagonal `m = n`; the strict part is
-`WellQuasiOrdered.exists_monotone_subseq_lt`. -/
-theorem WellQuasiOrdered.exists_monotone_subseq_of_refl [Std.Refl r]
-    (h : WellQuasiOrdered r) (f : ℕ → α) :
-    ∃ g : ℕ ↪o ℕ, ∀ m n : ℕ, m ≤ n → r (f (g m)) (f (g n)) := by
-  obtain ⟨e, he, hmono⟩ := h.exists_monotone_subseq_lt f
-  refine ⟨⟨⟨e, he.injective⟩, he.le_iff_le⟩, fun m n hle => ?_⟩
-  obtain hlt | rfl := hle.lt_or_eq
-  · exact hmono m n hlt
-  · exact refl_of r _
 
 end
