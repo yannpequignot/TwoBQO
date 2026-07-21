@@ -3,7 +3,7 @@ Copyright (c) 2026 Yann Pequignot. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yann Pequignot
 -/
-import Fronts.Defs
+import Fronts.Rank
 
 /-!
 # Restricting a front to an infinite subset
@@ -89,5 +89,49 @@ theorem shrink_isFront (hF : IsFront F M) {E : ℕ → ℕ} (hE : StrictMono E) 
         have hhead : u.head? = some ((M ∘ E) k) := by rw [hInit.head? hune]; simp
         obtain ⟨ys, hys⟩ := List.head?_eq_some_iff.mp hhead
         rw [hys]; simp
+
+/-! ### Restriction: further lemmas -/
+
+/-- Restricting twice to nested subsets collapses to the inner restriction. -/
+theorem shrink_shrink {N N' : ℕ → ℕ} (h : Set.range N' ⊆ Set.range N) :
+    shrink (shrink F N) N' = shrink F N' := by
+  ext s
+  simp only [shrink, Set.mem_setOf_eq]
+  constructor
+  · rintro ⟨⟨hsF, _⟩, hN'⟩; exact ⟨hsF, hN'⟩
+  · rintro ⟨hsF, hN'⟩; exact ⟨⟨hsF, fun x hx => h (hN' x hx)⟩, hN'⟩
+
+/-- The restriction of the uniform front `[M]^k` to an infinite subset `M ∘ e` is the uniform front
+`[M ∘ e]^k` on that subset. -/
+theorem shrink_powK {e : ℕ → ℕ} (k : ℕ) :
+    shrink (powK M k) (M ∘ e) = powK (M ∘ e) k := by
+  ext s
+  simp only [shrink, powK, Set.mem_setOf_eq]
+  constructor
+  · rintro ⟨⟨hlen, hp, _⟩, hMe⟩; exact ⟨hlen, hp, hMe⟩
+  · rintro ⟨hlen, hp, hMe⟩
+    refine ⟨⟨hlen, hp, fun x hx => ?_⟩, hMe⟩
+    obtain ⟨i, rfl⟩ := hMe x hx
+    exact ⟨e i, rfl⟩
+
+/-- The tree of a restriction is contained in the tree of the front. -/
+theorem tree_shrink_subset {N : ℕ → ℕ} : tree (shrink F N) ⊆ tree F := by
+  rintro s ⟨u, hu, hpre⟩
+  exact ⟨u, hu.1, hpre⟩
+
+/-- **Restriction does not increase rank.** The restriction of a front to an infinite subset has
+rank at most that of the front. -/
+theorem IsFront.shrink_rank_le (hF : IsFront F M) {E : ℕ → ℕ} (hE : StrictMono E) :
+    (shrink_isFront hF hE).rank ≤ hF.rank := by
+  haveI iF : IsWellFounded (List ℕ) (treeExt F) := ⟨hF.wellFounded_treeExt⟩
+  haveI iS : IsWellFounded (List ℕ) (treeExt (shrink F (M ∘ E))) :=
+    ⟨(shrink_isFront hF hE).wellFounded_treeExt⟩
+  -- The identity is a relation homomorphism `treeExt (shrink F N) →r treeExt F`.
+  let φ : treeExt (shrink F (M ∘ E)) →r treeExt F :=
+    ⟨id, by
+      rintro x y ⟨hx, hy, hyx, hne⟩
+      exact ⟨tree_shrink_subset hx, tree_shrink_subset hy, hyx, hne⟩⟩
+  show IsWellFounded.rank (treeExt (shrink F (M ∘ E))) [] ≤ IsWellFounded.rank (treeExt F) []
+  exact φ.rank_le []
 
 end Front
