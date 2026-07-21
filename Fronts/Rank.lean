@@ -35,7 +35,32 @@ open Set List Ordinal
 
 set_option autoImplicit false
 
+universe u
+
 noncomputable section
+
+/-- **A relation homomorphism does not increase rank.** If `f : r →r s` maps `r` into a
+well-founded relation `s`, then the `r`-rank of `a` is at most the `s`-rank of `f a`. This is the
+cross-relation companion to `IsWellFounded.rank_lt_of_rel` (which only compares ranks within a
+single relation), and the tool underlying the rank comparisons for the ray and the restriction of
+a front. General; Mathlib-bound (belongs next to `IsWellFounded.rank_lt_of_rel`). -/
+theorem RelHom.rank_le {α β : Type u} {r : α → α → Prop} {s : β → β → Prop}
+    [IsWellFounded α r] [IsWellFounded β s] (f : r →r s) (a : α) :
+    IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a) := by
+  refine IsWellFounded.induction r a
+    (motive := fun a => IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a))
+    (fun a IH => ?_)
+  show IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a)
+  rw [IsWellFounded.rank_eq r a]
+  apply Ordinal.iSup_le
+  rintro ⟨b, hb⟩
+  calc Order.succ (IsWellFounded.rank r b)
+      ≤ Order.succ (IsWellFounded.rank s (f b)) := Order.succ_le_succ (IH b hb)
+    _ ≤ IsWellFounded.rank s (f a) := by
+        rw [IsWellFounded.rank_eq s (f a)]
+        exact Ordinal.le_iSup
+          (fun c : {c // s c (f a)} => Order.succ (IsWellFounded.rank s c))
+          ⟨f b, f.map_rel hb⟩
 
 namespace Front
 
