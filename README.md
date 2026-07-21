@@ -13,7 +13,9 @@ has a *good triple* `m < n < l` with `r (f m n) (f n l)`. Unlike WQO, 2-BQO is c
 constructions WQO alone is not known to be closed under — most importantly infinite (lexicographic)
 sums indexed by a 2-BQO and passage to sequences under a suitable embedding relation.
 
-The theory follows Pequignot, (*Towards better: A motivated introduction to better-quasi-orders*, EMS Surveys 2017) [https://ems.press/journals/emss/articles/15096].
+The theory follows Pequignot,
+[*Towards better: A motivated introduction to better-quasi-orders*](https://ems.press/journals/emss/articles/15096),
+EMS Surveys 2017.
 
 ## Files
 
