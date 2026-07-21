@@ -18,8 +18,7 @@ import WellQuasiOrderRegular
 /-!
 # 2-better-quasi-orders (2-BQO)
 
-A formalization of 2-better-quasi-orders, following Pequignot, *Better-quasi-order: ideals and
-spaces*, EMS Surveys 2017. A 2-BQO is a strengthening of well-quasi-order (WQO) phrased via
+A formalization of 2-better-quasi-orders, following Pequignot, *BTowards better: A motivated introduction to better-quasi-orders*, EMS Surveys 2017. A 2-BQO is a strengthening of well-quasi-order (WQO) phrased via
 *pair-sequences* `f : ∀ m n, m < n → α` instead of plain sequences: `r` is 2-BQO if every
 pair-sequence has a *good triple* `m < n < l` with `r (f m n) (f n l)`.
 
