@@ -281,53 +281,51 @@ theorem powK_rank (hM : StrictMono M) (k : ℕ) : (isFront_powK hM k).rank = (k 
 theorem mem_tree_schreier (hM : StrictMono M) {s : List ℕ} :
     s ∈ tree (schreier M) ↔
       s.Pairwise (· < ·) ∧ (∀ x ∈ s, x ∈ Set.range M) ∧
-        (s = [] ∨ s.length ≤ s.headI + 1) := by
+        (∀ a, s.head? = some a → s.length ≤ a + 1) := by
   constructor
-  · rintro ⟨u, ⟨hulen, hup, huM⟩, hpre⟩
+  · rintro ⟨u, ⟨⟨c, huc, hulen⟩, hup, huM⟩, hpre⟩
     refine ⟨List.Pairwise.sublist hpre.sublist hup, fun x hx => huM x (hpre.subset hx), ?_⟩
-    rcases eq_or_ne s [] with rfl | hne
-    · exact Or.inl rfl
-    · refine Or.inr ?_
-      rw [← IsPrefix.headI_eq hpre hne]
-      calc s.length ≤ u.length := hpre.length_le
-        _ = u.headI + 1 := hulen
+    intro a hsa
+    have hsne : s ≠ [] := by rintro rfl; simp at hsa
+    have huhead : u.head? = some a := by rw [hpre.head?_eq hsne]; exact hsa
+    have hca : c = a := Option.some.inj (huc.symm.trans huhead)
+    calc s.length ≤ u.length := hpre.length_le
+      _ = c + 1 := hulen
+      _ = a + 1 := by rw [hca]
   · rintro ⟨hs, hsM, hcase⟩
     rcases eq_or_ne s [] with rfl | hne
     · exact (isFront_schreier hM).nil_mem_tree
-    · have hlen : s.length ≤ s.headI + 1 := hcase.resolve_left hne
-      obtain ⟨t, hpre, ht, htM, htlen⟩ := exists_extend_len hM (s.headI + 1) s hs hsM hlen
-      have hthead : t.headI = s.headI := IsPrefix.headI_eq hpre hne
-      exact ⟨t, ⟨by rw [htlen, hthead], ht, htM⟩, hpre⟩
+    · obtain ⟨a, hsa⟩ : ∃ a, s.head? = some a := by
+        cases s with
+        | nil => exact absurd rfl hne
+        | cons c t => exact ⟨c, rfl⟩
+      have hlen : s.length ≤ a + 1 := hcase a hsa
+      obtain ⟨t, hpre, ht, htM, htlen⟩ := exists_extend_len hM (a + 1) s hs hsM hlen
+      have hthead : t.head? = some a := by rw [hpre.head?_eq hne]; exact hsa
+      exact ⟨t, ⟨⟨a, hthead, htlen⟩, ht, htM⟩, hpre⟩
 
-/-- **Interior of the Schreier front.** A nonempty node `s` in the tree has rank
-`s.headI + 1 - s.length`. -/
-theorem schreier_rank_node (hM : StrictMono M) {s : List ℕ}
-    (hsmem : s ∈ tree (schreier M)) (hne : s ≠ []) :
+/-- **Interior of the Schreier front.** A node `s` in the tree with first element `a` has rank
+`a + 1 - s.length`. -/
+theorem schreier_rank_node (hM : StrictMono M) {s : List ℕ} {a : ℕ}
+    (hsmem : s ∈ tree (schreier M)) (hhead : s.head? = some a) :
     haveI : IsWellFounded (List ℕ) (treeExt (schreier M)) :=
       ⟨(isFront_schreier hM).wellFounded_treeExt⟩
-    IsWellFounded.rank (treeExt (schreier M)) s = ((s.headI + 1 - s.length : ℕ) : Ordinal) := by
+    IsWellFounded.rank (treeExt (schreier M)) s = ((a + 1 - s.length : ℕ) : Ordinal) := by
   haveI : IsWellFounded (List ℕ) (treeExt (schreier M)) :=
     ⟨(isFront_schreier hM).wellFounded_treeExt⟩
-  have hpre_a : [s.headI] <+: s := by
-    cases s with
-    | nil => exact absurd rfl hne
-    | cons c t => exact ⟨t, rfl⟩
-  have hhead : ∀ s', [s.headI] <+: s' → s'.headI = s.headI := by
+  have hpre_a : [a] <+: s := by
+    obtain ⟨ys, rfl⟩ := List.head?_eq_some_iff.mp hhead
+    exact ⟨ys, rfl⟩
+  have hhead' : ∀ s', [a] <+: s' → s'.head? = some a := by
     intro s' hp
-    have h1 := IsPrefix.headI_eq hp (by simp : [s.headI] ≠ [])
-    simpa using h1
-  have hbound : ∀ s', [s.headI] <+: s' → s' ∈ tree (schreier M) →
-      s'.length ≤ s.headI + 1 := by
-    intro s' hp hmem
-    have hne' : s' ≠ [] := by intro h; subst h; simpa using hp.length_le
-    rcases ((mem_tree_schreier hM).mp hmem).2.2 with h | h
-    · exact absurd h hne'
-    · rw [← hhead s' hp]; exact h
-  have hext : ∀ s', [s.headI] <+: s' → s' ∈ tree (schreier M) → s'.length < s.headI + 1 →
+    rw [hp.head?_eq (by simp), List.head?_cons]
+  have hbound : ∀ s', [a] <+: s' → s' ∈ tree (schreier M) → s'.length ≤ a + 1 :=
+    fun s' hp hmem => ((mem_tree_schreier hM).mp hmem).2.2 a (hhead' s' hp)
+  have hext : ∀ s', [a] <+: s' → s' ∈ tree (schreier M) → s'.length < a + 1 →
       ∃ x, treeExt (schreier M) (s' ++ [x]) s' := by
     intro s' hp hmem hlt
     obtain ⟨hsp, hsM, -⟩ := (mem_tree_schreier hM).mp hmem
-    have hne' : s' ≠ [] := by intro h; subst h; simpa using hp.length_le
+    have hne' : s' ≠ [] := by rintro rfl; simpa using hp.length_le
     obtain ⟨x, hxM, hxgt⟩ := exists_extend_gt hM s'
     have hs'p : (s' ++ [x]).Pairwise (· < ·) := by
       rw [List.pairwise_append]
@@ -338,13 +336,16 @@ theorem schreier_rank_node (hM : StrictMono M) {s : List ℕ}
       rcases hz with h | h
       · exact hsM z h
       · simp only [List.mem_singleton] at h; subst h; exact hxM
-    have hs'head : (s' ++ [x]).headI = s.headI := by
-      rw [IsPrefix.headI_eq (List.prefix_append s' [x]) hne']; exact hhead s' hp
-    refine ⟨x, (mem_tree_schreier hM).mpr ⟨hs'p, hs'M, Or.inr ?_⟩, hmem,
+    have hs'head : (s' ++ [x]).head? = some a := by
+      rw [(List.prefix_append s' [x]).head?_eq hne']; exact hhead' s' hp
+    refine ⟨x, (mem_tree_schreier hM).mpr ⟨hs'p, hs'M, ?_⟩, hmem,
       List.prefix_append s' [x], ?_⟩
-    · rw [hs'head]; simp only [List.length_append, List.length_cons, List.length_nil]; omega
+    · intro c hc
+      rw [hs'head] at hc
+      obtain rfl := Option.some.inj hc
+      simp only [List.length_append, List.length_cons, List.length_nil]; omega
     · intro h; have := congrArg List.length h; simp at this
-  exact rank_eq_sub (isFront_schreier hM) (s.headI + 1) hbound hext s hpre_a hsmem
+  exact rank_eq_sub (isFront_schreier hM) (a + 1) hbound hext s hpre_a hsmem
 
 /-- **The Schreier front has rank `ω`.** -/
 theorem schreier_rank (hM : StrictMono M) : (isFront_schreier hM).rank = ω := by
@@ -354,20 +355,28 @@ theorem schreier_rank (hM : StrictMono M) : (isFront_schreier hM).rank = ω := b
   apply le_antisymm
   · apply Ordinal.iSup_le
     rintro ⟨y, hytree, -, -, hbne⟩
-    rw [schreier_rank_node hM hytree hbne.symm, ← Ordinal.natCast_succ]
+    have hyne : y ≠ [] := hbne.symm
+    obtain ⟨a, hya⟩ : ∃ a, y.head? = some a := by
+      cases y with
+      | nil => exact absurd rfl hyne
+      | cons c t => exact ⟨c, rfl⟩
+    rw [schreier_rank_node hM hytree hya, ← Ordinal.natCast_succ]
     exact le_of_lt (Ordinal.nat_lt_omega0 _)
   · rw [← Ordinal.iSup_natCast]
     apply Ordinal.iSup_le
     intro n
     obtain ⟨x, hxM, hxgt⟩ := exists_gt_range hM n
     have hxtree : [x] ∈ tree (schreier M) := by
-      refine (mem_tree_schreier hM).mpr ⟨List.pairwise_singleton _ _, ?_, Or.inr ?_⟩
+      refine (mem_tree_schreier hM).mpr ⟨List.pairwise_singleton _ _, ?_, ?_⟩
       · intro z hz; simp only [List.mem_singleton] at hz; subst hz; exact hxM
-      · simp
+      · intro c hc
+        rw [List.head?_cons] at hc
+        obtain rfl := Option.some.inj hc
+        simp only [List.length_cons, List.length_nil]; omega
     have hte : treeExt (schreier M) [x] [] :=
       ⟨hxtree, (isFront_schreier hM).nil_mem_tree, List.nil_prefix, by simp⟩
     have hrank : IsWellFounded.rank (treeExt (schreier M)) [x] = (x : Ordinal) := by
-      rw [schreier_rank_node hM hxtree (by simp)]; simp
+      rw [schreier_rank_node hM hxtree List.head?_cons]; simp
     calc (n : Ordinal) ≤ ((x + 1 : ℕ) : Ordinal) := by rw [Nat.cast_le]; omega
       _ = Order.succ (IsWellFounded.rank (treeExt (schreier M)) [x]) := by
             rw [hrank, Ordinal.natCast_succ]

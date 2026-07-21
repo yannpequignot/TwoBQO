@@ -8,7 +8,6 @@ import Mathlib.Data.Nat.Lattice
 import Mathlib.Data.Nat.Nth
 import RamseyInfinite
 
-
 /-!
 # Nash-Williams Fronts
 
@@ -47,21 +46,13 @@ noncomputable section
 
 namespace List
 
-/-- For a nonempty list, `headI` is the `0`-th entry. -/
-theorem headI_eq_getElem {l : List ℕ} (h : 0 < l.length) : l.headI = l[0] := by
-  cases l with
-  | nil => simp at h
-  | cons a t => simp
-
 /-- A prefix keeps the first entry. -/
-theorem IsPrefix.headI_eq {s t : List ℕ} (hpre : s <+: t) (hne : s ≠ []) :
-    t.headI = s.headI := by
-  have hs0 : 0 < s.length := by
-    cases s with
-    | nil => exact absurd rfl hne
-    | cons _ _ => simp
-  rw [headI_eq_getElem (lt_of_lt_of_le hs0 hpre.length_le), headI_eq_getElem hs0]
-  exact (hpre.getElem hs0).symm
+theorem IsPrefix.head?_eq {α : Type*} {s t : List α} (h : s <+: t) (hne : s ≠ []) :
+    t.head? = s.head? := by
+  obtain ⟨u, rfl⟩ := h
+  cases s with
+  | nil => exact absurd rfl hne
+  | cons a s' => simp
 
 end List
 
@@ -94,11 +85,11 @@ theorem IsInit.getElem {s : List ℕ} {N : ℕ → ℕ} (hs : IsInit s N)
   simpa [List.getElem?_eq_getElem h] using hq
 
 /-- The first entry of a nonempty initial segment of `N` is `N 0`. -/
-theorem IsInit.headI {s : List ℕ} {N : ℕ → ℕ} (hs : IsInit s N) (h : 0 < s.length) :
-    s.headI = N 0 := by
+theorem IsInit.head? {s : List ℕ} {N : ℕ → ℕ} (hs : IsInit s N) (hne : s ≠ []) :
+    s.head? = some (N 0) := by
+  have hlen : 0 < s.length := List.length_pos_iff.mpr hne
   obtain ⟨m, hm⟩ : ∃ m, s.length = m + 1 := ⟨s.length - 1, by omega⟩
-  have hs' : s = (List.range (m + 1)).map N := by rw [hs, hm]
-  rw [hs', List.range_succ_eq_map]
+  rw [hs, hm, List.head?_map, List.range_succ_eq_map]
   simp
 
 /-- An initial segment is determined by its length: two initial segments of `N` of equal length
@@ -130,7 +121,7 @@ structure IsFront (F : Set (List ℕ)) (M : ℕ → ℕ) : Prop where
   /-- `M` is the increasing enumeration of an infinite subset of `ℕ`; in particular `range M`
   is infinite. Without this a degenerate `M` (e.g. constant) would vacuously admit "fronts". -/
   mono : StrictMono M
-  /-- Every element of `F` is (strictly increasing enumeration) of a finite set. -/
+  /-- Every element of `F` is the strictly increasing enumeration of a finite set. -/
   sorted : ∀ s ∈ F, s.Pairwise (· < ·)
   /-- Every element of `F` is a subset of `M`. -/
   subM : ∀ s ∈ F, ∀ x ∈ s, x ∈ Set.range M
@@ -145,7 +136,7 @@ structure IsFront (F : Set (List ℕ)) (M : ℕ → ℕ) : Prop where
 ## The uniform fronts `[M]^k`
 
 The prototypical fronts: `[M]^k` is the family of size-`k` subsets of `M`, i.e. the strictly
-increasing lists of length`k` whose entries lie in `M`.
+increasing lists of length `k` whose entries lie in `M`.
 -/
 
 /-- `[M]^k` : the strictly increasing lists of length `k` contained in `M`. -/
@@ -199,13 +190,15 @@ theorem isFront_powK {M : ℕ → ℕ} (hM : StrictMono M) (k : ℕ) : IsFront (
 ## The Schreier front
 
 The Schreier front on `M` consists of the non-empty finite subsets `s ⊆ M` whose size is one
-more than the minimal element: for an enumeration `s`, `s.length = s.headI + 1`. It is the first
+more than the minimal (first) element: `∃ a, s.head? = some a ∧ s.length = a + 1`. It is the first
 genuinely non-uniform front — the lists' length varies with where the list starts.
 -/
 
-/-- The Schreier front on `M`: increasing lists `s ⊆ M` with `s.length = s.headI + 1`. -/
+/-- The Schreier front on `M`: increasing lists `s ⊆ M` whose length is one more than their first
+element. -/
 def schreier (M : ℕ → ℕ) : Set (List ℕ) :=
-  {s | s.length = s.headI + 1 ∧ s.Pairwise (· < ·) ∧ ∀ x ∈ s, x ∈ Set.range M}
+  {s | (∃ a, s.head? = some a ∧ s.length = a + 1) ∧
+    s.Pairwise (· < ·) ∧ ∀ x ∈ s, x ∈ Set.range M}
 
 /-- **The Schreier front is a front on `M`.** -/
 theorem isFront_schreier {M : ℕ → ℕ} (hM : StrictMono M) : IsFront (schreier M) M where
@@ -213,17 +206,16 @@ theorem isFront_schreier {M : ℕ → ℕ} (hM : StrictMono M) : IsFront (schrei
   sorted _ hs := hs.2.1
   subM _ hs := hs.2.2
   incomp s hs t ht hst := by
-    have hs1 := hs.1
-    have ht1 := ht.1
-    have hs0 : 0 < s.length := by omega
-    have hhead : s.headI = t.headI := by
-      rw [headI_eq_getElem hs0, headI_eq_getElem (by omega), hst.getElem hs0]
-    exact hst.eq_of_length (by rw [hs1, ht1, hhead])
+    obtain ⟨a, hsa, hslen⟩ := hs.1
+    obtain ⟨b, htb, htlen⟩ := ht.1
+    have hsne : s ≠ [] := by rintro rfl; simp at hsa
+    have hth : t.head? = some a := by rw [hst.head?_eq hsne]; exact hsa
+    have hab : a = b := Option.some.inj (hth.symm.trans htb)
+    exact hst.eq_of_length (by rw [hslen, htlen, hab])
   dense g hg := by
     -- the initial segment of `M ∘ g` whose length is `(M ∘ g) 0 + 1`
-    refine ⟨(List.range ((M ∘ g) 0 + 1)).map (M ∘ g), ⟨?_, ?_, ?_⟩,
-      isInit_take (M ∘ g) _⟩
-    · rw [(isInit_take (M ∘ g) _).headI (by simp)]; simp
+    refine ⟨(List.range ((M ∘ g) 0 + 1)).map (M ∘ g), ⟨?_, ?_, ?_⟩, isInit_take (M ∘ g) _⟩
+    · exact ⟨(M ∘ g) 0, (isInit_take (M ∘ g) ((M ∘ g) 0 + 1)).head? (by simp), by simp⟩
     · exact (rangeMap_mem_powK hM hg _).2.1
     · exact (rangeMap_mem_powK hM hg _).2.2
   base := by
@@ -236,7 +228,7 @@ theorem isFront_schreier {M : ℕ → ℕ} (hM : StrictMono M) : IsFront (schrei
     · rintro ⟨i, rfl⟩
       have he : StrictMono (i + ·) := add_right_strictMono
       refine ⟨(List.range (M i + 1)).map (M ∘ (i + ·)), ⟨?_, ?_, ?_⟩, ?_⟩
-      · rw [(isInit_take (M ∘ (i + ·)) _).headI (by simp)]; simp
+      · exact ⟨M i, (isInit_take (M ∘ (i + ·)) (M i + 1)).head? (by simp), by simp⟩
       · exact (rangeMap_mem_powK hM he _).2.1
       · exact (rangeMap_mem_powK hM he _).2.2
       · rw [List.mem_map]
