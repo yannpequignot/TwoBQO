@@ -51,19 +51,6 @@ theorem IsFront.nash_williams (hF : IsFront F M) (S : Set (List ℕ)) :
       (shrink F (M ∘ e) ⊆ S ∨ Disjoint (shrink F (M ∘ e)) S) := by
   sorry
 
-/-! ### Restriction helpers -/
-
-/-- Restricting twice to nested subsets collapses to the inner restriction. -/
-theorem shrink_shrink {N N' : ℕ → ℕ} (h : Set.range N' ⊆ Set.range N) :
-    shrink (shrink F N) N' = shrink F N' := by
-  sorry
-
-/-- The restriction of the uniform front `[M]^k` to an infinite subset `M ∘ e` is the uniform front
-`[M ∘ e]^k` on that subset. -/
-theorem shrink_powK (hM : StrictMono M) {e : ℕ → ℕ} (he : StrictMono e) (k : ℕ) :
-    shrink (powK M k) (M ∘ e) = powK (M ∘ e) k := by
-  sorry
-
 /-! ### Stage 2: the finite-color version -/
 
 /-- **Finite-color Nash-Williams.** For a front `F` on `M` and a coloring `c` of finite lists by a
