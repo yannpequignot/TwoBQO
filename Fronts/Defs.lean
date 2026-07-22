@@ -36,6 +36,17 @@ monotone enumeration and the underlying set is recovered as a `range`.
   finite set and an infinite set.
 * `⊑` between two finite sets is plain `List.IsPrefix` (`<+:`).
 * `[M]^∞`, the infinite subsets of `M`, is exactly the subsequences `M ∘ g` for `StrictMono g`.
+
+### Why increasing lists rather than `Finset ℕ`
+
+Front elements are finite subsets, but the whole theory — incomparability, density, the tree of
+prefixes and its rank — is phrased in the *initial-segment (prefix) order*, not just in terms of
+membership. `List.IsPrefix` carries that order natively, with the full Mathlib API (and matching
+`Mathlib.SetTheory.Descriptive.Tree`, whose nodes are likewise `List`s). A `Finset ℕ` has no
+intrinsic order, so an initial-segment relation on finsets would have to be reintroduced by
+sorting and its API rebuilt from scratch. We therefore encode a finite subset by its strictly
+increasing enumeration (a sorted `List ℕ`) and bridge to `Finset ℕ` only at the boundary with
+`Finset`-based (e.g. Ramsey) statements, via `Finset.sort` / `List.toFinset`.
 -/
 
 open Set List
@@ -55,6 +66,15 @@ theorem IsPrefix.head?_eq {α : Type*} {s t : List α} (h : s <+: t) (hne : s �
   | cons a s' => simp
 
 end List
+
+/-- **Enumeration bridge.** Every infinite set of naturals is the range of its (unique) strictly
+monotone enumeration. This recovers, from a set-valued carrier `X`, the enumeration `N` on which
+the enumeration-first machinery (`Front.shrink`, ranks, …) operates. -/
+theorem Set.Infinite.exists_strictMono_range {X : Set ℕ} (hX : X.Infinite) :
+    ∃ N : ℕ → ℕ, StrictMono N ∧ Set.range N = X := by
+  have hp : (setOf (· ∈ X)).Infinite := by rwa [Set.setOf_mem_eq]
+  refine ⟨Nat.nth (· ∈ X), Nat.nth_strictMono hp, ?_⟩
+  rw [Nat.range_nth_of_infinite hp, Set.setOf_mem_eq]
 
 namespace Front
 
@@ -190,8 +210,8 @@ theorem isFront_powK {M : ℕ → ℕ} (hM : StrictMono M) (k : ℕ) : IsFront (
 ## The Schreier front
 
 The Schreier front on `M` consists of the non-empty finite subsets `s ⊆ M` whose size is one
-more than the minimal (first) element: `∃ a, s.head? = some a ∧ s.length = a + 1`. It is the first
-genuinely non-uniform front — the lists' length varies with where the list starts.
+more than the minimal (first) element: `∃ a, s.head? = some a ∧ s.length = a + 1`. It is the
+first genuinely non-uniform front — the lists' length varies with where the list starts.
 -/
 
 /-- The Schreier front on `M`: increasing lists `s ⊆ M` whose length is one more than their first
@@ -214,7 +234,8 @@ theorem isFront_schreier {M : ℕ → ℕ} (hM : StrictMono M) : IsFront (schrei
     exact hst.eq_of_length (by rw [hslen, htlen, hab])
   dense g hg := by
     -- the initial segment of `M ∘ g` whose length is `(M ∘ g) 0 + 1`
-    refine ⟨(List.range ((M ∘ g) 0 + 1)).map (M ∘ g), ⟨?_, ?_, ?_⟩, isInit_take (M ∘ g) _⟩
+    refine ⟨(List.range ((M ∘ g) 0 + 1)).map (M ∘ g), ⟨?_, ?_, ?_⟩,
+      isInit_take (M ∘ g) _⟩
     · exact ⟨(M ∘ g) 0, (isInit_take (M ∘ g) ((M ∘ g) 0 + 1)).head? (by simp), by simp⟩
     · exact (rangeMap_mem_powK hM hg _).2.1
     · exact (rangeMap_mem_powK hM hg _).2.2
