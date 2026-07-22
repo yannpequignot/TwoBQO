@@ -266,6 +266,18 @@ re-derives it from the Nash-Williams theorem. -/
 theorem ramsey_seq_of_nashWilliams {κ : Type*} [Finite κ] (k : ℕ) (c : Finset ℕ → κ) :
     ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ,
       ∀ t : Finset ℕ, ↑t ⊆ Set.range e → t.card = k → c t = col := by
-  sorry
+  classical
+  -- Apply the finite-color theorem to the uniform front `[ℕ]^k` with the list-coloring `c ∘ toFinset`.
+  obtain ⟨e, he, col, hmono⟩ :=
+    (isFront_powK (strictMono_id (α := ℕ)) k).nash_williams_fin (fun s => c s.toFinset)
+  refine ⟨e, he, col, fun t hts htcard => ?_⟩
+  -- The sorted list of `t` is a member of the restricted uniform front.
+  have hmem : t.sort (· ≤ ·) ∈ powK (id ∘ e) k := by
+    refine ⟨?_, (Finset.sortedLT_sort t).pairwise, fun x hx => ?_⟩
+    · rw [Finset.length_sort]; exact htcard
+    · rw [Finset.mem_sort] at hx; exact hts hx
+  have hshr : t.sort (· ≤ ·) ∈ shrink (powK id k) (id ∘ e) := by rw [shrink_powK]; exact hmem
+  have hc := hmono _ hshr
+  rwa [Finset.sort_toFinset] at hc
 
 end Front
