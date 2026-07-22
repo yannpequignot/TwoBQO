@@ -42,6 +42,15 @@ entries all lie in `range N`. -/
 def shrink (F : Set (List ℕ)) (N : ℕ → ℕ) : Set (List ℕ) :=
   {s | s ∈ F ∧ ∀ x ∈ s, x ∈ Set.range N}
 
+/-- The restriction of `F` to a set `X` (the survey's `F ↾ X`): the elements of `F` whose entries
+all lie in `X`. Definitionally `shrink F N = shrinkOn F (Set.range N)`, so the enumeration-based
+`shrink` and this set-based restriction agree on `X = Set.range N`. -/
+def shrinkOn (F : Set (List ℕ)) (X : Set ℕ) : Set (List ℕ) :=
+  {s | s ∈ F ∧ ∀ x ∈ s, x ∈ X}
+
+theorem shrink_eq_shrinkOn_range (F : Set (List ℕ)) (N : ℕ → ℕ) :
+    shrink F N = shrinkOn F (Set.range N) := rfl
+
 /-- **The restriction of a front to an infinite subset is a front on that subset.** For a front
 `F` on `M` and the infinite subset `N = M ∘ E` (`E` strictly monotone), `shrink F N` is a front
 on `N`. -/
@@ -101,8 +110,8 @@ theorem shrink_shrink {N N' : ℕ → ℕ} (h : Set.range N' ⊆ Set.range N) :
   · rintro ⟨⟨hsF, _⟩, hN'⟩; exact ⟨hsF, hN'⟩
   · rintro ⟨hsF, hN'⟩; exact ⟨⟨hsF, fun x hx => h (hN' x hx)⟩, hN'⟩
 
-/-- The restriction of the uniform front `[M]^k` to an infinite subset `M ∘ e` is the uniform front
-`[M ∘ e]^k` on that subset. -/
+/-- The restriction of the uniform front `[M]^k` to an infinite subset `M ∘ e` is the uniform
+front `[M ∘ e]^k` on that subset. -/
 theorem shrink_powK {e : ℕ → ℕ} (k : ℕ) :
     shrink (powK M k) (M ∘ e) = powK (M ∘ e) k := by
   ext s

@@ -9,9 +9,9 @@ import Fronts.Shrink
 /-!
 # The Nash-Williams theorem
 
-The Nash-Williams theorem: a 2-coloring (equivalently, a subset `S`) of a front `F` on `M` admits a
-monochromatic sub-front, i.e. an infinite `X ⊆ M` with `F | X ⊆ S` or `F | X ∩ S = ∅`. Here `F | X`
-is `shrink F (M ∘ e)` for the increasing enumeration `M ∘ e` of `X`.
+The Nash-Williams theorem: a 2-coloring (equivalently, a subset `S`) of a front `F` on `M` admits
+a monochromatic sub-front, i.e. an infinite `X ⊆ M` with `F | X ⊆ S` or `F | X ∩ S = ∅`. Here
+`F | X` is `shrink F (M ∘ e)` for the increasing enumeration `M ∘ e` of `X`.
 
 This file stages the development:
 
@@ -119,14 +119,15 @@ private theorem nw_of_rank : ∀ (α : Ordinal) (M : ℕ → ℕ) (F : Set (List
     · exact nw_trivial hF h0 S
     · -- Nontrivial front `[] ∉ F`: the ray recursion.
       -- The induction hypothesis, packaged as a rank-bounded oracle for `nw_step`.
-      have ih : ∀ {M' : ℕ → ℕ} {F' : Set (List ℕ)} (hF' : IsFront F' M'), hF'.rank < hF.rank →
-          ∀ S' : Set (List ℕ), ∃ e : ℕ → ℕ, StrictMono e ∧
+      have ih : ∀ {M' : ℕ → ℕ} {F' : Set (List ℕ)} (hF' : IsFront F' M'),
+          hF'.rank < hF.rank → ∀ S' : Set (List ℕ), ∃ e : ℕ → ℕ, StrictMono e ∧
             (shrink F' (M' ∘ e) ⊆ S' ∨ Disjoint (shrink F' (M' ∘ e)) S') :=
         fun {M'} {F'} hF' hlt S' => IH hF'.rank (hrank ▸ hlt) M' F' hF' S' rfl
       -- Iterate the step by dependent choice.
       choose g hnest hgt gcol hcolT hcolF using nw_step hF h0 S ih
       let st : ℕ → {B : ℕ → ℕ // StrictMono B ∧ ∀ i, B i ∈ Set.range M} :=
-        fun k => Nat.rec (motive := fun _ => {B : ℕ → ℕ // StrictMono B ∧ ∀ i, B i ∈ Set.range M})
+        fun k => Nat.rec
+          (motive := fun _ => {B : ℕ → ℕ // StrictMono B ∧ ∀ i, B i ∈ Set.range M})
           ⟨M, hF.mono, fun i => ⟨i, rfl⟩⟩ (fun _ p => g p) k
       have hstep : ∀ k, st (k + 1) = g (st k) := fun _ => rfl
       let nn : ℕ → ℕ := fun k => (st k).1 0
@@ -197,20 +198,27 @@ private theorem nw_of_rank : ∀ (α : Ordinal) (M : ℕ → ℕ) (F : Set (List
         rw [Set.disjoint_left]
         intro s hs hsS
         obtain ⟨j0, t, hst, ht⟩ := key s hs
-        have hdisj2 : Disjoint (shrink (ray F (nn (φ j0))) (st (φ j0 + 1)).1) (ray S (nn (φ j0))) := by
+        have hdisj2 :
+            Disjoint (shrink (ray F (nn (φ j0))) (st (φ j0 + 1)).1) (ray S (nn (φ j0))) := by
           have h := hcolF (st (φ j0)) (hφcol j0); rwa [← hstep (φ j0)] at h
         rw [Set.disjoint_left] at hdisj2
         rw [hst] at hsS; exact hdisj2 ht hsS
 
 /-- **The Nash-Williams theorem (subset form).** For a front `F` on `M` and any subset `S`, there
-is an infinite subset `M ∘ e ⊆ M` on which the restricted front `shrink F (M ∘ e)` is entirely
-inside `S` or entirely outside `S`.
+is an infinite subset `X ⊆ range M` on which the restricted front `shrinkOn F X` (the survey's
+`F ↾ X`) is entirely inside `S` or entirely outside `S`.
+
+The carrier is stated as a set `X`; its strictly monotone enumeration `N` (with `Set.range N = X`,
+so that `shrinkOn F X = shrink F N`) is recovered through `Set.Infinite.exists_strictMono_range`.
 
 Proved by transfinite recursion on `hF.rank` (the *ray recursion*). -/
 theorem IsFront.nash_williams (hF : IsFront F M) (S : Set (List ℕ)) :
-    ∃ e : ℕ → ℕ, StrictMono e ∧
-      (shrink F (M ∘ e) ⊆ S ∨ Disjoint (shrink F (M ∘ e)) S) :=
-  nw_of_rank hF.rank M F hF S rfl
+    ∃ X : Set ℕ, X ⊆ Set.range M ∧ X.Infinite ∧
+      (shrinkOn F X ⊆ S ∨ Disjoint (shrinkOn F X) S) := by
+  obtain ⟨e, he, hcase⟩ := nw_of_rank hF.rank M F hF S rfl
+  refine ⟨Set.range (M ∘ e), Set.range_comp_subset_range e M,
+    Set.infinite_range_of_injective (hF.mono.comp he).injective, ?_⟩
+  rwa [shrink_eq_shrinkOn_range] at hcase
 
 /-! ### Stage 2: the finite-color version -/
 
@@ -219,7 +227,8 @@ is colored within the finite palette `P`, some restriction is monochromatic. Pro
 well-founded induction on `P` (color-blurring), so the color type `κ` stays fixed. -/
 private theorem nw_fin_aux {κ : Type*} [DecidableEq κ] (c : List ℕ → κ) (P : Finset κ) :
     ∀ (M : ℕ → ℕ) (F : Set (List ℕ)), IsFront F M → (∀ s ∈ F, c s ∈ P) →
-      ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ, ∀ s ∈ shrink F (M ∘ e), c s = col := by
+      ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ,
+        ∀ s ∈ shrink F (M ∘ e), c s = col := by
   induction P using Finset.strongInductionOn with
   | _ P IH =>
     intro M F hF hb
@@ -227,7 +236,7 @@ private theorem nw_fin_aux {κ : Type*} [DecidableEq κ] (c : List ℕ → κ) (
     obtain ⟨s0, hs0, -⟩ := hF.dense id strictMono_id
     have ha : c s0 ∈ P := hb s0 hs0
     -- Blur `c` to the 2-coloring "is it `c s0`?" and apply the base theorem.
-    obtain ⟨e₁, he₁, hcase⟩ := hF.nash_williams {s | c s = c s0}
+    obtain ⟨e₁, he₁, hcase⟩ := nw_of_rank hF.rank M F hF {s | c s = c s0} rfl
     rcases hcase with hsub | hdis
     · exact ⟨e₁, he₁, c s0, fun s hs => hsub hs⟩
     · have hF' : IsFront (shrink F (M ∘ e₁)) (M ∘ e₁) := shrink_isFront hF he₁
@@ -236,7 +245,8 @@ private theorem nw_fin_aux {κ : Type*} [DecidableEq κ] (c : List ℕ → κ) (
       obtain ⟨e₂, he₂, col, hcol⟩ :=
         IH (P.erase (c s0)) (Finset.erase_ssubset ha) (M ∘ e₁) _ hF' hb'
       refine ⟨e₁ ∘ e₂, he₁.comp he₂, col, fun s hs => ?_⟩
-      have hcol2 : shrink (shrink F (M ∘ e₁)) ((M ∘ e₁) ∘ e₂) = shrink F (M ∘ (e₁ ∘ e₂)) :=
+      have hcol2 :
+          shrink (shrink F (M ∘ e₁)) ((M ∘ e₁) ∘ e₂) = shrink F (M ∘ (e₁ ∘ e₂)) :=
         shrink_shrink (Set.range_comp_subset_range e₂ (M ∘ e₁))
       exact hcol s (hcol2 ▸ hs)
 
@@ -247,8 +257,10 @@ restricted front.
 Obtained from `IsFront.nash_williams` by induction on the palette with color-blurring: split off one
 color as a subset `S`, apply the base theorem, and recurse into the smaller palette on the
 disjoint side (a front via `shrink_isFront`), composing restrictions with `shrink_shrink`. -/
-theorem IsFront.nash_williams_fin (hF : IsFront F M) {κ : Type*} [Finite κ] (c : List ℕ → κ) :
-    ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ, ∀ s ∈ shrink F (M ∘ e), c s = col := by
+theorem IsFront.nash_williams_fin (hF : IsFront F M) {κ : Type*} [Finite κ]
+    (c : List ℕ → κ) :
+    ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ,
+      ∀ s ∈ shrink F (M ∘ e), c s = col := by
   classical
   haveI : Fintype κ := Fintype.ofFinite κ
   exact nw_fin_aux c Finset.univ M F hF (fun s _ => Finset.mem_univ _)
@@ -267,7 +279,7 @@ theorem ramsey_seq_of_nashWilliams {κ : Type*} [Finite κ] (k : ℕ) (c : Finse
     ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ,
       ∀ t : Finset ℕ, ↑t ⊆ Set.range e → t.card = k → c t = col := by
   classical
-  -- Apply the finite-color theorem to the uniform front `[ℕ]^k` with the list-coloring `c ∘ toFinset`.
+  -- Apply the finite-color theorem to `[ℕ]^k` with the list-coloring `c ∘ toFinset`.
   obtain ⟨e, he, col, hmono⟩ :=
     (isFront_powK (strictMono_id (α := ℕ)) k).nash_williams_fin (fun s => c s.toFinset)
   refine ⟨e, he, col, fun t hts htcard => ?_⟩
@@ -276,7 +288,8 @@ theorem ramsey_seq_of_nashWilliams {κ : Type*} [Finite κ] (k : ℕ) (c : Finse
     refine ⟨?_, (Finset.sortedLT_sort t).pairwise, fun x hx => ?_⟩
     · rw [Finset.length_sort]; exact htcard
     · rw [Finset.mem_sort] at hx; exact hts hx
-  have hshr : t.sort (· ≤ ·) ∈ shrink (powK id k) (id ∘ e) := by rw [shrink_powK]; exact hmem
+  have hshr : t.sort (· ≤ ·) ∈ shrink (powK id k) (id ∘ e) := by
+    rw [shrink_powK]; exact hmem
   have hc := hmono _ hshr
   rwa [Finset.sort_toFinset] at hc
 

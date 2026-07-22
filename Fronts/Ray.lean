@@ -72,7 +72,8 @@ theorem rayEnum_strictMono (hM : StrictMono M) (a : ℕ) : StrictMono (rayEnum M
 theorem rayEnum_gt (hM : StrictMono M) (a i : ℕ) : a < rayEnum M a i :=
   lt_of_lt_of_le (afterShift_spec hM a) (hM.monotone (by omega))
 
-theorem rayEnum_mem_range (a i : ℕ) : rayEnum M a i ∈ Set.range M := ⟨i + afterShift M a, rfl⟩
+theorem rayEnum_mem_range (a i : ℕ) : rayEnum M a i ∈ Set.range M :=
+  ⟨i + afterShift M a, rfl⟩
 
 theorem mem_range_rayEnum_iff (hM : StrictMono M) (a n : ℕ) :
     n ∈ Set.range (rayEnum M a) ↔ n ∈ Set.range M ∧ a < n := by
