@@ -214,16 +214,44 @@ theorem IsFront.nash_williams (hF : IsFront F M) (S : Set (List ℕ)) :
 
 /-! ### Stage 2: the finite-color version -/
 
+/-- Shrinking-palette core of the finite-color Nash-Williams theorem: if every element of the front
+is colored within the finite palette `P`, some restriction is monochromatic. Proved by
+well-founded induction on `P` (color-blurring), so the color type `κ` stays fixed. -/
+private theorem nw_fin_aux {κ : Type*} [DecidableEq κ] (c : List ℕ → κ) (P : Finset κ) :
+    ∀ (M : ℕ → ℕ) (F : Set (List ℕ)), IsFront F M → (∀ s ∈ F, c s ∈ P) →
+      ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ, ∀ s ∈ shrink F (M ∘ e), c s = col := by
+  induction P using Finset.strongInductionOn with
+  | _ P IH =>
+    intro M F hF hb
+    -- Density gives an element of `F`, hence a color `a ∈ P` to blur on.
+    obtain ⟨s0, hs0, -⟩ := hF.dense id strictMono_id
+    have ha : c s0 ∈ P := hb s0 hs0
+    -- Blur `c` to the 2-coloring "is it `c s0`?" and apply the base theorem.
+    obtain ⟨e₁, he₁, hcase⟩ := hF.nash_williams {s | c s = c s0}
+    rcases hcase with hsub | hdis
+    · exact ⟨e₁, he₁, c s0, fun s hs => hsub hs⟩
+    · have hF' : IsFront (shrink F (M ∘ e₁)) (M ∘ e₁) := shrink_isFront hF he₁
+      have hb' : ∀ s ∈ shrink F (M ∘ e₁), c s ∈ P.erase (c s0) := fun s hs =>
+        Finset.mem_erase.mpr ⟨Set.disjoint_left.mp hdis hs, hb s hs.1⟩
+      obtain ⟨e₂, he₂, col, hcol⟩ :=
+        IH (P.erase (c s0)) (Finset.erase_ssubset ha) (M ∘ e₁) _ hF' hb'
+      refine ⟨e₁ ∘ e₂, he₁.comp he₂, col, fun s hs => ?_⟩
+      have hcol2 : shrink (shrink F (M ∘ e₁)) ((M ∘ e₁) ∘ e₂) = shrink F (M ∘ (e₁ ∘ e₂)) :=
+        shrink_shrink (Set.range_comp_subset_range e₂ (M ∘ e₁))
+      exact hcol s (hcol2 ▸ hs)
+
 /-- **Finite-color Nash-Williams.** For a front `F` on `M` and a coloring `c` of finite lists by a
 finite palette `κ`, there is an infinite subset `M ∘ e ⊆ M` on which `c` is constant over the
 restricted front.
 
-Obtained from `IsFront.nash_williams` by induction on `‖κ‖` with color-blurring: split off one
+Obtained from `IsFront.nash_williams` by induction on the palette with color-blurring: split off one
 color as a subset `S`, apply the base theorem, and recurse into the smaller palette on the
 disjoint side (a front via `shrink_isFront`), composing restrictions with `shrink_shrink`. -/
 theorem IsFront.nash_williams_fin (hF : IsFront F M) {κ : Type*} [Finite κ] (c : List ℕ → κ) :
     ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ, ∀ s ∈ shrink F (M ∘ e), c s = col := by
-  sorry
+  classical
+  haveI : Fintype κ := Fintype.ofFinite κ
+  exact nw_fin_aux c Finset.univ M F hF (fun s _ => Finset.mem_univ _)
 
 /-! ### Stage 3: the finite-arity infinite Ramsey theorem -/
 
