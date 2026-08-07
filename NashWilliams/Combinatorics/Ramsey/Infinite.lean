@@ -3,9 +3,9 @@ Copyright (c) 2026 Yann Pequignot. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yann Pequignot
 -/
-import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Nat.Lattice
-import Mathlib.Data.Nat.Nth
+import NashWilliams.Data.Fintype.Pigeonhole
+import NashWilliams.Data.Nat.Nth
 
 /-!
 # The infinite Ramsey theorem
@@ -33,14 +33,6 @@ open Set
 set_option autoImplicit false
 noncomputable section
 
-theorem Set.Infinite.exists_strictMono {s : Set ℕ} (hs : s.Infinite) :
-    ∃ e : ℕ → ℕ, StrictMono e ∧ ∀ i, e i ∈ s :=
-  ⟨Nat.nth (· ∈ s), Nat.nth_strictMono hs, Nat.nth_mem_of_infinite hs⟩
-
-theorem exists_infinite_fiber_nat {κ : Type*} [Finite κ] (f : ℕ → κ) :
-    ∃ k : κ, {n : ℕ | f n = k}.Infinite := by
-  obtain ⟨k, hk⟩ := Finite.exists_infinite_fiber f
-  exact ⟨k, Set.infinite_coe_iff.mp hk⟩
 variable {κ : Type*}
 
 private structure RamseyState (c : Finset ℕ → κ) (r : ℕ) where

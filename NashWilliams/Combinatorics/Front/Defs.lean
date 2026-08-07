@@ -3,10 +3,8 @@ Copyright (c) 2026 Yann Pequignot. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yann Pequignot
 -/
-import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Nat.Lattice
-import Mathlib.Data.Nat.Nth
-import NashWilliams.Combinatorics.Ramsey.Infinite
+import NashWilliams.Data.Nat.Nth
 
 /-!
 # Nash-Williams Fronts
@@ -66,15 +64,6 @@ theorem IsPrefix.head?_eq {α : Type*} {s t : List α} (h : s <+: t) (hne : s �
   | cons a s' => simp
 
 end List
-
-/-- **Enumeration bridge.** Every infinite set of naturals is the range of its (unique) strictly
-monotone enumeration. This recovers, from a set-valued carrier `X`, the enumeration `N` on which
-the enumeration-first machinery (`Front.shrink`, ranks, …) operates. -/
-theorem Set.Infinite.exists_strictMono_range {X : Set ℕ} (hX : X.Infinite) :
-    ∃ N : ℕ → ℕ, StrictMono N ∧ Set.range N = X := by
-  have hp : (setOf (· ∈ X)).Infinite := by rwa [Set.setOf_mem_eq]
-  refine ⟨Nat.nth (· ∈ X), Nat.nth_strictMono hp, ?_⟩
-  rw [Nat.range_nth_of_infinite hp, Set.setOf_mem_eq]
 
 namespace Front
 

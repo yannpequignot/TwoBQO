@@ -5,6 +5,7 @@ Authors: Yann Pequignot
 -/
 import NashWilliams.Combinatorics.Front.Ray
 import NashWilliams.Combinatorics.Front.Shrink
+import NashWilliams.Data.Fintype.Pigeonhole
 
 /-!
 # The Nash-Williams theorem
