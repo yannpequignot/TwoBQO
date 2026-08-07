@@ -33,8 +33,6 @@ strictly longer.
 
 open Set List Ordinal
 
-set_option autoImplicit false
-
 universe u
 
 noncomputable section
@@ -50,7 +48,7 @@ theorem RelHom.rank_le {α β : Type u} {r : α → α → Prop} {s : β → β 
   refine IsWellFounded.induction r a
     (motive := fun a => IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a))
     (fun a IH => ?_)
-  show IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a)
+  change IsWellFounded.rank r a ≤ IsWellFounded.rank s (f a)
   rw [IsWellFounded.rank_eq r a]
   apply Ordinal.iSup_le
   rintro ⟨b, hb⟩

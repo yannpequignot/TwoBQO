@@ -29,8 +29,6 @@ formalized here.)
 
 open Set List
 
-set_option autoImplicit false
-
 noncomputable section
 
 namespace Front
@@ -140,7 +138,7 @@ theorem IsFront.shrink_rank_le (hF : IsFront F M) {E : ℕ → ℕ} (hE : Strict
     ⟨id, by
       rintro x y ⟨hx, hy, hyx, hne⟩
       exact ⟨tree_shrink_subset hx, tree_shrink_subset hy, hyx, hne⟩⟩
-  show IsWellFounded.rank (treeExt (shrink F (M ∘ E))) [] ≤ IsWellFounded.rank (treeExt F) []
+  change IsWellFounded.rank (treeExt (shrink F (M ∘ E))) [] ≤ IsWellFounded.rank (treeExt F) []
   exact φ.rank_le []
 
 end Front

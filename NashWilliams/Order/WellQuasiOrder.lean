@@ -28,11 +28,7 @@ the current Mathlib `WellQuasiOrdered.exists_monotone_subseq`.
 
 open Set
 
-set_option autoImplicit false
-
 noncomputable section
-
-open Classical
 
 namespace Sequences
 
@@ -51,6 +47,7 @@ def IsPerfect (r : α → α → Prop) (f : ℕ → α) : Prop :=
 pairs applied to the `2`-colouring `(m, n) ↦ ¬ r (f m) (f n)`; no order axioms are used. -/
 theorem perfect_or_bad (r : α → α → Prop) (f : ℕ → α) :
     ∃ e : ℕ → ℕ, StrictMono e ∧ (IsPerfect r (f ∘ e) ∨ IsBad r (f ∘ e)) := by
+  classical
   obtain ⟨e, he, k, hk⟩ := @infinite_ramsey_pairs Bool inferInstance
     (fun m n (_ : m < n) => decide (¬ r (f m) (f n)))
   refine ⟨e, he, ?_⟩

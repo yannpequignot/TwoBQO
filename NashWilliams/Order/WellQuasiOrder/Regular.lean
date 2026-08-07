@@ -98,8 +98,8 @@ private theorem exists_bad_seq {Q : Type*} (r : Q → Q → Prop) (f : ℕ → Q
     obtain ⟨i', hi'_ge, hfin'⟩ := key (max (i + 1) (B + 1))
     obtain ⟨B', hB'⟩ := hfin'.bddAbove
     refine ⟨⟨(i', max B' i'), fun j hj => le_trans (hB' hj) (le_max_left _ _)⟩, ?_, ?_⟩
-    · show i < i'; have h := le_trans (le_max_left (i + 1) (B + 1)) hi'_ge; omega
-    · show B < i'; have h := le_trans (le_max_right (i + 1) (B + 1)) hi'_ge; omega
+    · change i < i'; have h := le_trans (le_max_left (i + 1) (B + 1)) hi'_ge; omega
+    · change B < i'; have h := le_trans (le_max_right (i + 1) (B + 1)) hi'_ge; omega
   obtain ⟨i₀, _, hfin₀⟩ := key 0
   obtain ⟨B₀, hB₀⟩ := hfin₀.bddAbove
   let p0 : S := ⟨(i₀, B₀), hB₀⟩
@@ -111,10 +111,10 @@ private theorem exists_bad_seq {Q : Type*} (r : Q → Q → Prop) (f : ℕ → Q
   set idx : ℕ → ℕ := fun k => (seq k).1.1 with hidx
   set bd : ℕ → ℕ := fun k => (seq k).1.2 with hbd
   have hidx_lt : ∀ k, idx k < idx (k + 1) := fun k => by
-    show (seq k).1.1 < (seq (k + 1)).1.1
+    change (seq k).1.1 < (seq (k + 1)).1.1
     rw [hseq_succ k]; exact (hstep (seq k)).1
   have hbd_lt_idx : ∀ k, bd k < idx (k + 1) := fun k => by
-    show (seq k).1.2 < (seq (k + 1)).1.1
+    change (seq k).1.2 < (seq (k + 1)).1.1
     rw [hseq_succ k]; exact (hstep (seq k)).2
   have hidx_mono : StrictMono idx := strictMono_nat_of_lt_succ hidx_lt
   refine ⟨idx, hidx_mono, ?_⟩

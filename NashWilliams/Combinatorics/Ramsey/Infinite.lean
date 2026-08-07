@@ -29,8 +29,9 @@ their relational form.
 The `Finset ℕ` colouring interface follows B. Mehta's Lean 3 `inf_ramsey.lean`. See also the
 standalone project https://github.com/yannpequignot/lean-infinite-ramsey.
 -/
+
 open Set
-set_option autoImplicit false
+
 noncomputable section
 
 variable {κ : Type*}
@@ -140,7 +141,7 @@ theorem infinite_ramsey_seq [Finite κ] (r : ℕ) (c : Finset ℕ → κ) :
 /-- **The infinite Ramsey theorem for pairs (RT²)**, in relational form: for a finite colouring
 `c` of the ordered pairs `m < n`, there is a strictly monotone `e` and a colour `k` with
 `c (e i) (e j) = k` for all `i < j`. Derived from `infinite_ramsey_seq` at arity `2`. -/
-theorem infinite_ramsey_pairs {κ : Type*} [Fintype κ] (c : ∀ (m n : ℕ), m < n → κ) :
+theorem infinite_ramsey_pairs {κ : Type*} [Finite κ] (c : ∀ (m n : ℕ), m < n → κ) :
     ∃ (e : ℕ → ℕ), ∃ (he : StrictMono e), ∃ k : κ,
       ∀ i j : ℕ, (h : i < j) → c (e i) (e j) (he h) = k := by
   classical
@@ -191,7 +192,7 @@ theorem infinite_ramsey_pairs {κ : Type*} [Fintype κ] (c : ∀ (m n : ℕ), m 
 /-- **The infinite Ramsey theorem for triples (RT³)**, in relational form, derived from
 `infinite_ramsey_seq` at arity `3` (colour a `3`-subset by `c` of its least, middle and greatest
 element). -/
-theorem infinite_ramsey_triples {κ : Type*} [Fintype κ]
+theorem infinite_ramsey_triples {κ : Type*} [Finite κ]
     (c : ∀ (m n l : ℕ), (m < n ∧ n < l) → κ) :
     ∃ (e : ℕ → ℕ), ∃ (he : StrictMono e), ∃ k : κ,
       ∀ h i j : ℕ, (hs : h < i ∧ i < j) →

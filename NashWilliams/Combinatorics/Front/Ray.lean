@@ -40,8 +40,9 @@ The trivial front is `{[]}` (rank `0`). For a front, `[] ∉ F`, `F ≠ {[]}`, `
 -/
 
 open Set List
-set_option autoImplicit false
+
 noncomputable section
+
 variable {M : ℕ → ℕ}
 
 /-! ### Enumeration operations
@@ -258,7 +259,7 @@ theorem IsFront.ray_rank_lt (hF : IsFront F M) (h0 : [] ∉ F) {n : ℕ}
   have hlt : IsWellFounded.rank (treeExt F) [n] < IsWellFounded.rank (treeExt F) [] :=
     IsWellFounded.rank_lt_of_rel
       ⟨ha, hF.nil_mem_tree, List.nil_prefix, (List.cons_ne_nil n []).symm⟩
-  show IsWellFounded.rank (treeExt (ray F n)) [] < IsWellFounded.rank (treeExt F) []
+  change IsWellFounded.rank (treeExt (ray F n)) [] < IsWellFounded.rank (treeExt F) []
   exact lt_of_le_of_lt hle hlt
 
 end Front

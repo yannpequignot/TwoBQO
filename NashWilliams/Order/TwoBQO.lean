@@ -18,9 +18,11 @@ import NashWilliams.Order.WellQuasiOrder.Regular
 /-!
 # 2-better-quasi-orders (2-BQO)
 
-A formalization of 2-better-quasi-orders, following Pequignot, *BTowards better: A motivated introduction to better-quasi-orders*, EMS Surveys 2017. A 2-BQO is a strengthening of well-quasi-order (WQO) phrased via
-*pair-sequences* `f : ∀ m n, m < n → α` instead of plain sequences: `r` is 2-BQO if every
-pair-sequence has a *good triple* `m < n < l` with `r (f m n) (f n l)`.
+A formalization of 2-better-quasi-orders, following Pequignot, *Towards better: A motivated
+introduction to better-quasi-orders*, EMS Surveys 2017. A 2-BQO is a strengthening of
+well-quasi-order (WQO) phrased via *pair-sequences* `f : ∀ m n, m < n → α` instead of plain
+sequences: `r` is 2-BQO if every pair-sequence has a *good triple* `m < n < l` with
+`r (f m n) (f n l)`.
 
 2-BQO implies WQO (`TwoBQO.wellQuasiOrdered`), and unlike WQO it is closed under several
 constructions that WQO alone is not known to be closed under, most importantly forming an
@@ -110,7 +112,7 @@ def TwoBQO {α : Type*} (r : α → α → Prop) : Prop :=
   ∀ f : PairSeq α, ∃ m n l : ℕ, ∃ (hmn : m < n) (hnl : n < l), r (f m n hmn) (f n l hnl)
 
 theorem TwoBQO.iff_noBad {α : Type*} (r : α → α → Prop) : TwoBQO r ↔ TwoBQO_n r := by
-  simp [TwoBQO_n, PairSeq.IsBad, not_exists, not_forall]
+  simp only [TwoBQO_n, PairSeq.IsBad, not_exists, not_forall, not_not]
   exact Iff.symm (Eq.to_iff rfl)
 
 /-!
@@ -133,7 +135,7 @@ finite and *same colour ⟹ `r`-related*, then `r` is 2-BQO: colour pairs by `c 
 Ramsey-for-pairs (`infinite_ramsey_pairs`) makes the restriction monochromatic, so any triple is
 good. In particular, if `r` is a preorder whose induced partial order on `r`-equivalence classes
 has finitely many classes, taking `c` to be the quotient map gives `TwoBQO r`. -/
-theorem TwoBQO.of_finite_coloring {α κ : Type*} [Fintype κ] (r : α → α → Prop) (c : α → κ)
+theorem TwoBQO.of_finite_coloring {α κ : Type*} [Finite κ] (r : α → α → Prop) (c : α → κ)
     (hc : ∀ a b, c a = c b → r a b) : TwoBQO r := by
   intro f
   obtain ⟨e, he, k, hk⟩ := infinite_ramsey_pairs fun m n h => c (f m n h)
@@ -489,7 +491,10 @@ private theorem sublistForall₂_to_embedding {α : Type*} (r : α → α → Pr
     ∃ φ : Fin l₁.length → Fin l₂.length, StrictMono φ ∧ ∀ i, r (l₁.get i) (l₂.get (φ i)) := by
   induction h
   · simp +decide [StrictMono]
-  · simp_all +decide [Fin.forall_fin_succ, StrictMono]
+  · simp_all +decide only [StrictMono, List.get_eq_getElem, List.length_cons,
+      Fin.forall_fin_succ, Fin.not_lt_zero, IsEmpty.forall_iff, true_and, Fin.succ_pos,
+      forall_const, Fin.succ_lt_succ_iff, Fin.coe_ofNat_eq_mod, Nat.zero_mod,
+      List.getElem_cons_zero, Fin.val_succ, List.getElem_cons_succ]
     obtain ⟨φ, hφ₁, hφ₂⟩ := ‹_›
     use Fin.cons 0 (Fin.succ ∘ φ)
     aesop
@@ -508,7 +513,8 @@ private theorem embed_combine {α : Type*} (r : α → α → Prop) (Fa Fb : ℕ
     ∃ e : ℕ → ℕ, StrictMono e ∧ ∀ n, r (Fa n) (Fb (e n)) := by
   refine ⟨fun n => if hn : n < ka then ψ n else eG (n - ka) + kb, ?_, ?_⟩
   · intro m n hmn
-    by_cases hm : m < ka <;> by_cases hn : n < ka <;> simp +decide [hm, hn]
+    by_cases hm : m < ka <;> by_cases hn : n < ka <;>
+      simp +decide only [hm, ↓reduceDIte, hn, add_lt_add_iff_right]
     · exact hψ_mono m n hmn hn
     · linarith [hψ_lt m hm, heG_mono.monotone (Nat.zero_le (n - ka))]
     · linarith

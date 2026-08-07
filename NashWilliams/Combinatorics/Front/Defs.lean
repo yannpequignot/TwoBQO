@@ -49,8 +49,6 @@ increasing enumeration (a sorted `List ℕ`) and bridge to `Finset ℕ` only at 
 
 open Set List
 
-set_option autoImplicit false
-
 noncomputable section
 
 namespace List
@@ -110,7 +108,7 @@ theorem IsInit.eq_of_length {s t : List ℕ} {N : ℕ → ℕ}
 /-- A prefix of an initial segment of `N` is again an initial segment of `N`. -/
 theorem IsInit.isPrefix {s t : List ℕ} {N : ℕ → ℕ} (ht : IsInit t N) (h : s <+: t) :
     IsInit s N := by
-  show s = (List.range s.length).map N
+  change s = (List.range s.length).map N
   calc s = t.take s.length := List.prefix_iff_eq_take.mp h
     _ = ((List.range t.length).map N).take s.length := by rw [← ht]
     _ = (List.range s.length).map N := by

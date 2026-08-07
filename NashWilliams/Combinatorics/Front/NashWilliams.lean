@@ -32,8 +32,6 @@ Supporting lemmas:
 
 open Set List
 
-set_option autoImplicit false
-
 noncomputable section
 
 namespace Front
@@ -73,7 +71,7 @@ private theorem nw_step (hF : IsFront F M) (h0 : [] ∉ F) (S : Set (List ℕ))
         (col = true → shrink (ray F (T.1 0)) T'.1 ⊆ ray S (T.1 0)) ∧
         (col = false → Disjoint (shrink (ray F (T.1 0)) T'.1) (ray S (T.1 0))) := by
   obtain ⟨B, hBmono, hBsub⟩ := T
-  show ∃ T' : {B : ℕ → ℕ // StrictMono B ∧ ∀ i, B i ∈ Set.range M},
+  change ∃ T' : {B : ℕ → ℕ // StrictMono B ∧ ∀ i, B i ∈ Set.range M},
       (∀ i, T'.1 i ∈ Set.range B) ∧ (∀ i, B 0 < T'.1 i) ∧
       ∃ col : Bool,
         (col = true → shrink (ray F (B 0)) T'.1 ⊆ ray S (B 0)) ∧
@@ -172,7 +170,7 @@ private theorem nw_of_rank : ∀ (α : Ordinal) (M : ℕ → ℕ) (F : Set (List
         obtain ⟨j0, hj0⟩ := ha
         have hj0 : nn (φ j0) = a := hj0
         refine ⟨j0, t, by rw [hj0], ?_, ?_⟩
-        · show nn (φ j0) :: t ∈ F
+        · change nn (φ j0) :: t ∈ F
           rw [hj0]; exact hsF
         · intro x hx
           have hxE : x ∈ Set.range (M ∘ e) := hsE x (List.mem_cons_of_mem a hx)
@@ -226,10 +224,11 @@ theorem IsFront.nash_williams (hF : IsFront F M) (S : Set (List ℕ)) :
 /-- Shrinking-palette core of the finite-color Nash-Williams theorem: if every element of the front
 is colored within the finite palette `P`, some restriction is monochromatic. Proved by
 well-founded induction on `P` (color-blurring), so the color type `κ` stays fixed. -/
-private theorem nw_fin_aux {κ : Type*} [DecidableEq κ] (c : List ℕ → κ) (P : Finset κ) :
+private theorem nw_fin_aux {κ : Type*} (c : List ℕ → κ) (P : Finset κ) :
     ∀ (M : ℕ → ℕ) (F : Set (List ℕ)), IsFront F M → (∀ s ∈ F, c s ∈ P) →
       ∃ e : ℕ → ℕ, StrictMono e ∧ ∃ col : κ,
         ∀ s ∈ shrink F (M ∘ e), c s = col := by
+  classical
   induction P using Finset.strongInductionOn with
   | _ P IH =>
     intro M F hF hb
