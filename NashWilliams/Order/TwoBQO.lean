@@ -12,8 +12,8 @@ import Mathlib.SetTheory.Ordinal.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Push
-import RamseyInfinite
-import WellQuasiOrderRegular
+import NashWilliams.Combinatorics.Ramsey.Infinite
+import NashWilliams.Order.WellQuasiOrder.Regular
 
 /-!
 # 2-better-quasi-orders (2-BQO)

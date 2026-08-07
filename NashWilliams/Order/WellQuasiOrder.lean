@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yann Pequignot
 -/
 import Mathlib.Order.WellQuasiOrder
-import RamseyInfinite
+import NashWilliams.Combinatorics.Ramsey.Infinite
 
 /-!
 # Perfect/bad dichotomy and monotone subsequences in a well-quasi-order

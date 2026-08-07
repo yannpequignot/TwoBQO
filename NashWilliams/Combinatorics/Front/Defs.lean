@@ -6,7 +6,7 @@ Authors: Yann Pequignot
 import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Nat.Lattice
 import Mathlib.Data.Nat.Nth
-import RamseyInfinite
+import NashWilliams.Combinatorics.Ramsey.Infinite
 
 /-!
 # Nash-Williams Fronts

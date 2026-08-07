@@ -3,7 +3,7 @@ Copyright (c) 2026 Yann Pequignot. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yann Pequignot
 -/
-import Fronts.Rank
+import NashWilliams.Combinatorics.Front.Rank
 
 /-!
 # The ray of a front
