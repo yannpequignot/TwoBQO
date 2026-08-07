@@ -16,18 +16,25 @@ a monochromatic sub-front, i.e. an infinite `X ⊆ M` with `F | X ⊆ S` or `F |
 
 This file stages the development:
 
-* `IsFront.nash_williams` — the base 2-color/subset theorem (rank recursion; proof in progress).
+* `IsFront.nash_williams` — the base 2-color/subset theorem, by recursion on the rank of the
+  front.
 * `IsFront.nash_williams_fin` — the finite-color version, by induction on colors and
   color-blurring.
 * `Front.ramsey_seq_of_nashWilliams` — the finite-arity infinite Ramsey theorem, obtained by
-  instantiating the finite-color version at the uniform front `[M]^k` (`powK`). This re-derives
-  `infinite_ramsey_seq` from the Nash-Williams theorem, independently of the direct iterated-
-  pigeonhole proof in `RamseyInfinite`.
+  instantiating the finite-color version at the uniform front `[M]^k` (`powK`).
 
 Supporting lemmas:
 
 * `Front.shrink_shrink` — restricting twice collapses to a single restriction.
 * `Front.shrink_powK` — the restriction of a uniform front is the uniform front on the subset.
+
+## Two proofs of infinite Ramsey
+
+`Front.ramsey_seq_of_nashWilliams` re-derives `infinite_ramsey_seq` from the Nash-Williams
+theorem. It is deliberately kept alongside the direct iterated-pigeonhole proof in
+`NashWilliams.Combinatorics.Ramsey.Infinite`, and the two are *independent*: this file does not
+import that one. The only lemmas the two developments share are the generic helpers in
+`NashWilliams.Data`.
 -/
 
 open Set List
@@ -294,3 +301,24 @@ theorem ramsey_seq_of_nashWilliams {κ : Type*} [Finite κ] (k : ℕ) (c : Finse
   rwa [Finset.sort_toFinset] at hc
 
 end Front
+
+/-!
+## Verification
+
+These `#guard_msgs` blocks make the build fail if the headline results ever depend on anything
+beyond the three standard axioms of classical mathematics (in particular, on `sorryAx`).
+-/
+
+/-- info: 'Front.IsFront.nash_williams' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Front.IsFront.nash_williams
+
+/-- info: 'Front.IsFront.nash_williams_fin' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs in
+#print axioms Front.IsFront.nash_williams_fin
+
+/-- info: 'Front.ramsey_seq_of_nashWilliams' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs in
+#print axioms Front.ramsey_seq_of_nashWilliams

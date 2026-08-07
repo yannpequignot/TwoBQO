@@ -585,3 +585,23 @@ theorem TwoBQO.embedForAll_wqo {α : Type*} {r : α → α → Prop} [IsPreorder
     exact heG_rel
 
 end
+
+/-!
+## Verification
+
+These `#guard_msgs` blocks make the build fail if the headline results ever depend on anything
+beyond the three standard axioms of classical mathematics (in particular, on `sorryAx`).
+-/
+
+-- The term-mode proof is fully constructive.
+/-- info: 'TwoBQO.wellQuasiOrdered' does not depend on any axioms -/
+#guard_msgs in
+#print axioms TwoBQO.wellQuasiOrdered
+
+/-- info: 'TwoBQO.lexSigmaQO' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TwoBQO.lexSigmaQO
+
+/-- info: 'TwoBQO.embedForAll_wqo' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TwoBQO.embedForAll_wqo

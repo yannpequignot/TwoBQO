@@ -1,14 +1,16 @@
 name: CI
 
-# Kernel-checks the development on every push and pull request: builds
-# RamseyInfinite, WellQuasiOrderRegular and TwoBQO with Lean's kernel against the
-# pinned Mathlib (v4.28.0). RamseyInfinite.lean ends with `#guard_msgs` axiom checks,
-# so a green build also asserts the headline Ramsey theorems use only the three
-# standard axioms (no `sorry`).
+# Kernel-checks the whole development on every push and pull request, against the pinned
+# Mathlib (v4.28.0). Two things beyond a plain compile are asserted by a green run:
+#
+#  * Mathlib's linter set (`linter.mathlibStandardSet`, enabled in lakefile.lean) is applied to
+#    every file, so style regressions surface here.
+#  * Each headline theorem is followed by a `#guard_msgs`-wrapped `#print axioms`, so a green
+#    build asserts the development uses only the standard axioms — in particular, no `sorry`.
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
@@ -23,7 +25,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Build with lean-action
         uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: true
+
+      - name: Check that NashWilliams.lean imports every module
+        run: lake exe mk_all --lib NashWilliams --check

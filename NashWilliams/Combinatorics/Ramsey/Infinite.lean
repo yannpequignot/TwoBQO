@@ -28,6 +28,13 @@ their relational form.
 
 The `Finset ℕ` colouring interface follows B. Mehta's Lean 3 `inf_ramsey.lean`. See also the
 standalone project https://github.com/yannpequignot/lean-infinite-ramsey.
+
+## Two proofs of infinite Ramsey
+
+The proof here is direct and self-contained. `Front.ramsey_seq_of_nashWilliams`, in
+`NashWilliams.Combinatorics.Front.NashWilliams`, proves the same statement a second way, by
+instantiating the Nash-Williams theorem at the uniform front `[M]^k`. Both are kept, and neither
+file imports the other: they share only the generic helpers in `NashWilliams.Data`.
 -/
 
 open Set
