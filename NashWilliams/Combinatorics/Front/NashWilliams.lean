@@ -309,7 +309,8 @@ These `#guard_msgs` blocks make the build fail if the headline results ever depe
 beyond the three standard axioms of classical mathematics (in particular, on `sorryAx`).
 -/
 
-/-- info: 'Front.IsFront.nash_williams' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'Front.IsFront.nash_williams' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
 #guard_msgs in
 #print axioms Front.IsFront.nash_williams
 
